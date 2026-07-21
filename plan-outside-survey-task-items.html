@@ -104,6 +104,91 @@
       border-top-left-radius: 0;
       border-top-right-radius: 0;
     }
+
+    /* 普查人员选择弹窗 */
+    .worker-selected-area {
+      min-height: 60px;
+      padding: 12px 14px;
+      border: 1px solid #d6ddea;
+      border-radius: var(--radius-sm);
+      background: #fff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .worker-selected-area:empty::before {
+      content: "请选择普查人员";
+      color: #b8bfc9;
+      font-size: 14px;
+    }
+    .worker-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px 4px 12px;
+      background: #e8efff;
+      color: var(--primary);
+      border: 1px solid #b8c8f5;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .worker-chip .chip-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 12px;
+      line-height: 1;
+    }
+    .worker-chip .chip-close:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .worker-search {
+      margin-bottom: 14px;
+    }
+    .worker-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .worker-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .worker-card:hover { border-color: var(--primary); }
+    .worker-card.checked {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+    .worker-card .row-check {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .worker-card .worker-name {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .modal.modal-md { width: 760px; }
+    @media (max-width: 900px) {
+      .worker-grid { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -236,6 +321,34 @@
     </div>
   </div>
 
+  <!-- 普查人员选择弹窗 -->
+  <div class="modal-overlay" id="workerModal" style="display:none;">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div class="modal-title">普查人员选择</div>
+        <button class="modal-close" id="closeWorkerModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label><span style="color:var(--danger);">*</span> 普查人员</label>
+          <div class="worker-selected-area" id="workerSelected"></div>
+        </div>
+        <div class="field worker-search" style="margin-top:14px;">
+          <label>选择人员</label>
+          <input class="control" id="workerSearch" placeholder="搜索姓名">
+        </div>
+        <div class="worker-grid" id="workerGrid"></div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelWorkerModal">取消</button>
+          <button class="btn primary" id="confirmWorkerModal">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 菜单父子级展开/收起
     var menuParent = document.querySelector('.menu-parent');
@@ -322,7 +435,7 @@
             '<td>' + esc(t.dept) + '</td>' +
             '<td>' + esc(t.zone) + '</td>' +
             '<td>' + workerHtml + '</td>' +
-            '<td><div class="action-row"><a class="action-link" href="#">设置人员</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
+            '<td><div class="action-row"><a class="action-link" href="javascript:void(0)" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
             '</tr>';
         }).join('');
       } else {
@@ -363,6 +476,107 @@
       input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { currentPage = 1; render(); } });
     });
 
+    // 普查人员数据（按片区所）
+    var workersByZone = {
+      '桥西片区所': ['张三', '李晨晨', '王海', '赵敏', '刘洋', '孙琪'],
+      '裕华片区所': ['陈亮', '林婉清', '黄志强', '吴芳', '徐建国', '何静'],
+      '长安片区所': ['马超', '罗敏', '宋宏伟', '韩雪', '高磊', '冯婷婷']
+    };
+    var allWorkers = [];
+    Object.keys(workersByZone).forEach(function(z) {
+      workersByZone[z].forEach(function(n) { allWorkers.push({ name: n, zone: z }); });
+    });
+
+    var currentEditingTask = null;
+    var workerSelectedSet = {}; // 缓存正在编辑的已选人员
+
+    function openWorkerModal(task) {
+      currentEditingTask = task;
+      // 初始化已选人员
+      workerSelectedSet = {};
+      if (task.worker && task.worker !== '待分配') {
+        task.worker.split('、').forEach(function(n) {
+          var w = allWorkers.find(function(x) { return x.name === n && x.zone === task.zone; });
+          if (w) workerSelectedSet[n] = w;
+        });
+      }
+      renderSelectedChips();
+      renderWorkerGrid();
+      document.getElementById('workerSearch').value = '';
+      document.getElementById('workerModal').style.display = 'flex';
+    }
+    function closeWorkerModal() {
+      document.getElementById('workerModal').style.display = 'none';
+      currentEditingTask = null;
+      workerSelectedSet = {};
+    }
+    function renderSelectedChips() {
+      var box = document.getElementById('workerSelected');
+      var names = Object.keys(workerSelectedSet);
+      if (!names.length) { box.innerHTML = ''; return; }
+      box.innerHTML = names.map(function(n) {
+        return '<span class="worker-chip">' + esc(n) + ' <span class="chip-close" data-name="' + esc(n) + '">&times;</span></span>';
+      }).join('');
+      box.querySelectorAll('.chip-close').forEach(function(c) {
+        c.addEventListener('click', function() {
+          var n = c.getAttribute('data-name');
+          delete workerSelectedSet[n];
+          renderSelectedChips();
+          renderWorkerGrid();
+        });
+      });
+    }
+    function renderWorkerGrid(filter) {
+      var zone = currentEditingTask ? currentEditingTask.zone : '';
+      var list = allWorkers.filter(function(w) {
+        if (zone && w.zone !== zone) return false;
+        if (filter && w.name.indexOf(filter) === -1) return false;
+        return true;
+      });
+      var grid = document.getElementById('workerGrid');
+      if (!list.length) {
+        grid.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--muted);padding:30px 0;">该片区所暂无人员或搜索无结果</div>';
+        return;
+      }
+      grid.innerHTML = list.map(function(w) {
+        var checked = workerSelectedSet[w.name] ? 'checked' : '';
+        var cls = workerSelectedSet[w.name] ? 'worker-card checked' : 'worker-card';
+        return '<div class="' + cls + '" data-name="' + esc(w.name) + '">' +
+          '<input type="checkbox" class="row-check" ' + checked + '>' +
+          '<span class="worker-name">' + esc(w.name) + '</span>' +
+          '</div>';
+      }).join('');
+      grid.querySelectorAll('.worker-card').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+          var name = card.getAttribute('data-name');
+          if (workerSelectedSet[name]) {
+            delete workerSelectedSet[name];
+          } else {
+            var w = allWorkers.find(function(x) { return x.name === name; });
+            if (w) workerSelectedSet[name] = w;
+          }
+          renderSelectedChips();
+          renderWorkerGrid(document.getElementById('workerSearch').value.trim());
+        });
+      });
+    }
+    document.getElementById('workerSearch').addEventListener('input', function() {
+      renderWorkerGrid(this.value.trim());
+    });
+    document.getElementById('closeWorkerModal').addEventListener('click', closeWorkerModal);
+    document.getElementById('cancelWorkerModal').addEventListener('click', closeWorkerModal);
+    document.getElementById('confirmWorkerModal').addEventListener('click', function() {
+      if (!currentEditingTask) return;
+      var names = Object.keys(workerSelectedSet);
+      if (!names.length) {
+        alert('请至少选择一名普查人员');
+        return;
+      }
+      currentEditingTask.worker = names.join('、');
+      closeWorkerModal();
+      render();
+    });
+
     // 分页
     document.getElementById('pageBox').addEventListener('click', function(e) {
       var btn = e.target.closest('[data-page]');
@@ -374,6 +588,15 @@
 
     updateTabCounts();
     render();
+
+    // 表格操作代理：设置普查人员
+    document.getElementById('taskBody').addEventListener('click', function(e) {
+      var a = e.target.closest('a.action-link[data-task-id]');
+      if (!a) return;
+      var taskId = Number(a.getAttribute('data-task-id'));
+      var task = tasks.find(function(t) { return t.id === taskId; });
+      if (task) openWorkerModal(task);
+    });
   </script>
 </body>
 </html>
