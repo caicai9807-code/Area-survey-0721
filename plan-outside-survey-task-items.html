@@ -30,25 +30,33 @@
       color: var(--muted);
       font-size: 13px;
     }
+    .filter-grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto auto;
+      gap: 18px 20px;
+      align-items: end;
+    }
     .filter-grid-4 .field {
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
     }
     .filter-grid-4 .field label {
       white-space: nowrap;
       margin-bottom: 0;
       flex-shrink: 0;
+      color: #7e8aa0;
+      font-size: 13px;
     }
     .filter-grid-4 .field .control {
       flex: 1;
       min-width: 0;
-    }
-    .filter-grid-4 {
-      grid-template-columns: repeat(4, minmax(180px, 1fr)) auto auto;
+      width: auto;
     }
     .filter-grid-4 .btn-row {
       align-self: end;
+      gap: 8px;
     }
 
     /* Tabs 普查原因 */
