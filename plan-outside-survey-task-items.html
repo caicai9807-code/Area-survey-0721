@@ -364,16 +364,16 @@
 
     // 模拟数据
     var tasks = [
-      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配' },
-      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明' },
-      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩' },
-      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰' },
-      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦' },
-      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁' },
-      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋' },
-      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏' },
-      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强' },
-      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配' }
+      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配', status: '待分配' },
+      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明', status: '待分配' },
+      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩', status: '待分配' },
+      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰', status: '待分配' },
+      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦', status: '待分配' },
+      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁', status: '待分配' },
+      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋', status: '待分配' },
+      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏', status: '待分配' },
+      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强', status: '待分配' },
+      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配', status: '待分配' }
     ];
     var currentTab = 'all';
     var pageSize = 10;
@@ -397,7 +397,7 @@
         if (code && t.code.toLowerCase().indexOf(code) === -1) return false;
         if (name && t.name2.toLowerCase().indexOf(name) === -1) return false;
         if (type && t.type !== type) return false;
-        if (status && t.worker !== status) return false; // 简化：状态复用 worker 字段
+        if (status && t.status !== status) return false;
         return true;
       });
       return list;
@@ -435,7 +435,7 @@
             '<td>' + esc(t.dept) + '</td>' +
             '<td>' + esc(t.zone) + '</td>' +
             '<td>' + workerHtml + '</td>' +
-            '<td><div class="action-row"><a class="action-link" href="javascript:void(0)" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
+            '<td><div class="action-row"><a class="action-link set-worker" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link dispatch"' + (t.worker === '待分配' || t.status !== '待分配' ? ' style="display:none"' : '') + ' data-dispatch="' + t.id + '">下发</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
             '</tr>';
         }).join('');
       } else {
@@ -589,13 +589,25 @@
     updateTabCounts();
     render();
 
-    // 表格操作代理：设置普查人员
+    // 表格操作代理
     document.getElementById('taskBody').addEventListener('click', function(e) {
-      var a = e.target.closest('a.action-link[data-task-id]');
-      if (!a) return;
-      var taskId = Number(a.getAttribute('data-task-id'));
-      var task = tasks.find(function(t) { return t.id === taskId; });
-      if (task) openWorkerModal(task);
+      var setLink = e.target.closest('a.set-worker');
+      if (setLink) {
+        var taskId = Number(setLink.getAttribute('data-task-id'));
+        var task = tasks.find(function(t) { return t.id === taskId; });
+        if (task) openWorkerModal(task);
+        return;
+      }
+      var dispatchLink = e.target.closest('a.dispatch');
+      if (dispatchLink) {
+        var id = Number(dispatchLink.getAttribute('data-dispatch'));
+        var task = tasks.find(function(t) { return t.id === id; });
+        if (task && task.worker !== '待分配') {
+          task.status = '进行中';
+          render();
+        }
+        return;
+      }
     });
   </script>
 </body>
