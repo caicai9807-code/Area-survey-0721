@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的计划外普查任务 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .page-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .role-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 12px; font-weight: 600; margin-left: 10px; }
+
+    .filter-grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto auto;
+      gap: 18px 20px;
+      align-items: end;
+    }
+    .filter-grid-4 .field { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .filter-grid-4 .field label { white-space: nowrap; margin-bottom: 0; flex-shrink: 0; color: #7e8aa0; font-size: 13px; }
+    .filter-grid-4 .field .control { flex: 1; min-width: 0; width: auto; }
+    .filter-grid-4 .btn-row { align-self: end; gap: 8px; }
+
+    .page-left { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
+
+    /* 状态标签 */
+    .status-unassigned { background: #fff7e6; color: #d48806; }
+    .status-progress   { background: #e8efff; color: var(--primary); }
+    .status-zone-review { background: #f0f5ff; color: #597ef7; }
+    .status-dept-review { background: #e6fffb; color: #08979c; }
+    .status-rejected   { background: #fff2f0; color: var(--danger); }
+    .status-finished   { background: #f2f4f8; color: #78849b; }
+    .status-withdrawn  { background: #fffbe6; color: #d48806; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">&#x25A6;</div>
+        <span>面积普查管理系统</span>
+        <span class="chip" style="background:rgba(255,255,255,0.15);font-weight:600;">原型环境</span>
+      </div>
+      <div class="top-actions">
+        <div class="top-dropdown">
+          <span class="top-label">演示身份:</span> 普查员 <span style="font-size:10px;margin-left:2px;">&#x25BC;</span>
+        </div>
+        <div class="avatar">李</div>
+        <span>李明</span>
+      </div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false">
+            <span class="menu-icon">&#x25A3;</span> 计划外面积普查
+            <span class="menu-arrow" id="menuArrow">&#x25B2;</span>
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务管理
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-items.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务
+          </a>
+          <a class="menu-item active menu-child" href="plan-outside-survey-task-worker.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 我的计划外普查任务
+          </a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb">
+          <a href="#">面积普查</a>
+          <span>/</span>
+          <span>我的计划外普查任务</span>
+        </nav>
+
+        <div class="page-header-row">
+          <div>
+            <div class="page-title" style="font-size:20px;font-weight:700;color:var(--text);margin:0 0 4px;">我的计划外普查任务 <span class="role-badge">普查员</span></div>
+            <p class="page-subtitle">执行分配给我的计划外普查任务：填报数据、暂存、上报与撤回</p>
+          </div>
+        </div>
+
+        <div class="info-banner slim" style="margin-bottom:16px;">
+          <p><strong>操作说明</strong>&nbsp;&nbsp;进入「进行中」的任务可填报/导入数据；完成后点击「上报」提交至站长审核；上报后站长审核前可「撤回」继续修改。</p>
+        </div>
+
+        <section class="card">
+          <div class="card-header"><div class="card-title">筛选条件</div></div>
+          <div class="card-body">
+            <div class="filter-grid-4">
+              <div class="field">
+                <label>站点编码</label>
+                <input class="control" id="filterCode" placeholder="请输入站点编码">
+              </div>
+              <div class="field">
+                <label>站点名称</label>
+                <input class="control" id="filterName" placeholder="请输入站点名称">
+              </div>
+              <div class="field">
+                <label>站点类型</label>
+                <select class="control" id="filterType">
+                  <option value="">全部</option>
+                  <option>自管站</option>
+                  <option>用户站</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>任务状态</label>
+                <select class="control" id="filterStatus">
+                  <option value="">全部</option>
+                  <option>进行中</option>
+                  <option>进行中（已撤回）</option>
+                  <option>站长审核</option>
+                  <option>已退回</option>
+                  <option>已完成</option>
+                </select>
+              </div>
+              <div class="btn-row">
+                <button class="btn primary" id="doSearch">查询</button>
+                <button class="btn" id="doReset">重置</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>序号</th>
+                  <th>任务名称</th>
+                  <th>站点编码</th>
+                  <th>站点名称</th>
+                  <th>站点类型</th>
+                  <th>普查原因</th>
+                  <th>管理部</th>
+                  <th>任务状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="taskBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <div class="page-left"><span id="totalText">共 0 条</span><span>10条/页</span></div>
+            <div class="page-box" id="pageBox"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    var menuParent = document.querySelector('.menu-parent');
+    var subItems = document.querySelectorAll('.menu-child');
+    var menuArrow = document.getElementById('menuArrow');
+    menuParent.addEventListener('click', function() {
+      menuArrow.classList.toggle('collapsed');
+      for (var m = 0; m < subItems.length; m++) {
+        subItems[m].classList.toggle('menu-collapsed');
+      }
+    });
+
+    var tasks = [
+      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', assignee: '李明' },
+      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', assignee: '李明' },
+      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', assignee: '李明' },
+      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', assignee: '李明' },
+      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', assignee: '李明' },
+      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', assignee: '李明' },
+      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', assignee: '李明' }
+    ];
+    var pageSize = 10;
+    var currentPage = 1;
+
+    function esc(s) { return String(s).replace(/[&<>'"]/g, function(c) { return { '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c]; }); }
+    function typeTag(t) { return '<span class="tag ' + (t === '用户站' ? 'tag-user-station' : 'tag-self-station') + '">' + t + '</span>'; }
+    function statusTag(s) {
+      var map = { '进行中':'status-progress','进行中（已撤回）':'status-withdrawn','站长审核':'status-zone-review','所长审核':'status-zone-review','管理部审核':'status-dept-review','已退回':'status-rejected','已完成':'status-finished' };
+      var cls = map[s] || 'status-draft';
+      return '<span class="status-tag ' + cls + '">' + s + '</span>';
+    }
+
+    function doFilter() {
+      var code = document.getElementById('filterCode').value.trim().toLowerCase();
+      var name = document.getElementById('filterName').value.trim().toLowerCase();
+      var type = document.getElementById('filterType').value;
+      var status = document.getElementById('filterStatus').value;
+      return tasks.filter(function(t) {
+        if (code && t.code.toLowerCase().indexOf(code) === -1) return false;
+        if (name && t.name2.toLowerCase().indexOf(name) === -1) return false;
+        if (type && t.type !== type) return false;
+        if (status && t.status !== status) return false;
+        return true;
+      });
+    }
+
+    function renderOps(t) {
+      var s = t.status;
+      if (s === '进行中' || s === '进行中（已撤回）' || s === '已退回') {
+        return '<a class="action-link" href="#">填报/导入</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#">暂存</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#" data-op="report" data-id="' + t.id + '">上报</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
+      }
+      if (s === '站长审核') {
+        return '<a class="action-link" href="#">查看</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
+      }
+      if (s === '已完成') {
+        return '<a class="action-link" href="#">查看</a>';
+      }
+      return '<a class="action-link" href="#">查看</a>';
+    }
+
+    function render() {
+      var list = doFilter();
+      var totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      var rows = list.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+      document.getElementById('totalText').textContent = '共 ' + list.length + ' 条';
+
+      var tbody = document.getElementById('taskBody');
+      if (rows.length) {
+        tbody.innerHTML = rows.map(function(t) {
+          return '<tr>' +
+            '<td>' + t.id + '</td>' +
+            '<td><a class="action-link" href="#">' + esc(t.name) + '</a></td>' +
+            '<td>' + esc(t.code) + '</td>' +
+            '<td><strong>' + esc(t.name2) + '</strong></td>' +
+            '<td>' + typeTag(t.type) + '</td>' +
+            '<td>' + esc(t.reason) + '</td>' +
+            '<td>' + esc(t.dept) + '</td>' +
+            '<td>' + statusTag(t.status) + '</td>' +
+            '<td><div class="action-row">' + renderOps(t) + '</div></td>' +
+            '</tr>';
+        }).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+      }
+
+      var box = document.getElementById('pageBox');
+      var html = '<button class="page-btn text" ' + (currentPage === 1 ? 'disabled' : '') + ' data-page="' + (currentPage - 1) + '">上一页</button>';
+      for (var p = 1; p <= totalPages; p++) {
+        html += '<button class="page-number ' + (p === currentPage ? 'active' : '') + '" data-page="' + p + '">' + p + '</button>';
+      }
+      html += '<button class="page-btn text" ' + (currentPage === totalPages ? 'disabled' : '') + ' data-page="' + (currentPage + 1) + '">下一页</button>';
+      box.innerHTML = html;
+    }
+
+    // 筛选/重置
+    document.getElementById('doSearch').addEventListener('click', function() { currentPage = 1; render(); });
+    document.getElementById('doReset').addEventListener('click', function() {
+      document.querySelectorAll('.filter-grid-4 input').forEach(function(e) { e.value = ''; });
+      document.querySelectorAll('.filter-grid-4 select').forEach(function(e) { e.value = ''; });
+      currentPage = 1; render();
+    });
+    document.querySelectorAll('.filter-grid-4 input').forEach(function(input) {
+      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { currentPage = 1; render(); } });
+    });
+
+    // 分页
+    document.getElementById('pageBox').addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-page]');
+      if (btn && !btn.disabled) { currentPage = Number(btn.dataset.page); render(); }
+    });
+
+    // 操作代理
+    document.getElementById('taskBody').addEventListener('click', function(e) {
+      var a = e.target.closest('a.action-link[data-op]');
+      if (!a) return;
+      var op = a.getAttribute('data-op');
+      var id = Number(a.getAttribute('data-id'));
+      var task = tasks.find(function(t) { return t.id === id; });
+      if (!task) return;
+      if (op === 'report') {
+        task.status = '站长审核';
+        alert('已上报至站长审核。');
+        render();
+      } else if (op === 'withdraw') {
+        if (task.status === '站长审核') {
+          task.status = '进行中（已撤回）';
+          alert('已撤回，可继续修改后重新上报。');
+        } else {
+          alert('当前状态不支持撤回。');
+        }
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
