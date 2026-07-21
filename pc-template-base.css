@@ -1199,3 +1199,21 @@ th:last-child {
     grid-template-columns: 1fr;
   }
 }
+
+/* 通用标签（站点类型、是/否等） */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tag-user-station { background: #e8efff; color: var(--primary); }
+.tag-self-station { background: #fff7e6; color: #d48806; }
+.tag-yes { background: #f0fff4; color: var(--success); }
+.tag-no { background: #f2f4f8; color: #78849b; }

@@ -45,7 +45,10 @@
       min-width: 0;
     }
     .filter-grid-4 {
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, minmax(180px, 1fr)) auto auto;
+    }
+    .filter-grid-4 .btn-row {
+      align-self: end;
     }
 
     /* Tabs 普查原因 */
@@ -180,7 +183,7 @@
                   <option>进行中（已撤回）</option>
                 </select>
               </div>
-              <div class="btn-row" style="grid-column:5;justify-self:end;">
+              <div class="btn-row">
                 <button class="btn primary" id="doSearch">查询</button>
                 <button class="btn" id="doReset">重置</button>
               </div>
@@ -237,7 +240,6 @@
       }
     });
 
-    });
 
     // 模拟数据
     var tasks = [
