@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新建计划外普查任务 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .page-subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      background: #f0f4fa;
+      color: var(--primary);
+    }
+    .scope-selector {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid var(--primary-border);
+      background: #fff;
+      color: var(--primary);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .scope-selector:hover {
+      background: var(--primary-soft);
+    }
+    .card-extra {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .required {
+      color: var(--danger);
+      margin-right: 2px;
+    }
+    .form-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 20px 28px;
+    }
+    .form-grid-4 .field label {
+      white-space: nowrap;
+      margin-bottom: 10px;
+    }
+    .count-info {
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+    .empty-area {
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: #fafbfc;
+    }
+
+    /* 站点选择弹窗 */
+    .modal.modal-xl {
+      width: 1240px;
+      max-height: 88vh;
+    }
+    .modal-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(200px, 1fr)) auto;
+      gap: 16px 20px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+    .modal-filter-grid .field label {
+      white-space: nowrap;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .modal-filter-grid .btn-row {
+      align-self: end;
+    }
+    .modal-table-info {
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .modal-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .modal-table-wrap table {
+      min-width: 1100px;
+    }
+    .modal-table-wrap th,
+    .modal-table-wrap td {
+      padding: 12px 14px;
+    }
+    .modal-table-wrap th:first-child,
+    .modal-table-wrap td:first-child {
+      width: 44px;
+      text-align: center;
+    }
+    .row-check {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .tag-user-station { background: #e8efff; color: var(--primary); }
+    .tag-self-station { background: #fff7e6; color: #d48806; }
+    .tag-yes { background: #f0fff4; color: var(--success); }
+    .tag-no { background: #f2f4f8; color: #78849b; }
+    .modal-footer-count {
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .modal-footer-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .site-row td {
+      background: #fff;
+    }
+    .site-row:hover td {
+      background: #f8faff;
+    }
+    .site-row.checked td {
+      background: #f0f5ff;
+    }
+
+    /* 新增临时站点弹窗 */
+    .temp-form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 18px 24px;
+    }
+    .temp-form-grid .field label {
+      white-space: nowrap;
+      margin-bottom: 10px;
+    }
+    .temp-form-grid .field-full {
+      grid-column: 1 / -1;
+    }
+    .temp-form-grid .field-half {
+      grid-column: span 1;
+    }
+    .modal-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 400;
+      margin-top: 4px;
+    }
+    @media (max-width: 1400px) {
+      .form-grid-4 { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+      .modal-filter-grid { grid-template-columns: repeat(2, minmax(200px, 1fr)); }
+      .modal-filter-grid .btn-row { grid-column: span 2; justify-self: end; }
+      .temp-form-grid { grid-template-columns: repeat(2, minmax(200px, 1fr)); }
+      .temp-form-grid .field-full { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">&#x25A6;</div>
+        <span>面积普查管理系统</span>
+        <span class="chip" style="background:rgba(255,255,255,0.15);font-weight:600;">原型环境</span>
+      </div>
+      <div class="top-actions">
+        <div class="top-dropdown">
+          <span class="top-label">演示身份:</span> 计划管理部/业务管理员 <span style="font-size:10px;margin-left:2px;">&#x25BC;</span>
+        </div>
+        <div class="avatar">张</div>
+        <span>张敏</span>
+      </div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false">
+            <span class="menu-icon">&#x25A3;</span> 计划外面积普查
+            <span class="menu-arrow" id="menuArrow">&#x25B2;</span>
+          </a>
+          <a class="menu-item active menu-child" href="plan-outside-survey-task-list.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务管理
+          </a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb">
+          <a href="plan-outside-survey-task-list.html">计划外普查任务管理</a>
+          <span>/</span>
+          <span>新建任务</span>
+        </nav>
+
+        <div class="page-header-row">
+          <div>
+            <div class="page-title" style="display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:var(--text);margin:0 0 4px;">
+              <a class="back-link" href="plan-outside-survey-task-list.html" title="返回列表">&#x2190;</a>
+              新建计划外普查任务
+            </div>
+            <p class="page-subtitle">填写临时普查要求并选择需要普查的站点</p>
+          </div>
+          <div class="scope-selector" id="scopeSelector">
+            可选范围：全部管理部 <span style="font-size:10px;">&#x25BC;</span>
+          </div>
+        </div>
+
+        <div class="info-banner slim" style="margin-bottom:16px;">
+          <p><strong>提示</strong>&nbsp;&nbsp;一个计划外任务可同时包含用户户、自管站和对公用户。站点时间冲突仅作风险提示，不影响保存和下发。</p>
+        </div>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="card-title">任务信息</div>
+            <div class="card-extra">标记 <span class="required">*</span> 的字段为必填项</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid-4">
+              <div class="field">
+                <label for="taskName"><span class="required">*</span>任务名称</label>
+                <input class="control" id="taskName" placeholder="请输入任务名称">
+              </div>
+              <div class="field">
+                <label for="startTime"><span class="required">*</span>开始时间</label>
+                <input class="control" id="startTime" type="datetime-local" value="2026-07-16T09:00">
+              </div>
+              <div class="field">
+                <label for="endTime"><span class="required">*</span>结束时间</label>
+                <input class="control" id="endTime" type="datetime-local" value="2026-07-31T18:00">
+              </div>
+              <div class="field">
+                <label for="reason"><span class="required">*</span>计划外普查原因</label>
+                <select class="control" id="reason">
+                  <option value="">请选择计划外普查原因</option>
+                  <option>面积变化</option>
+                  <option>一管到户</option>
+                  <option>新开户及增容</option>
+                  <option>趸售用户</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="card-title">计划外普查范围 <span class="count-info" id="scopeCount">已选 0 项</span></div>
+            <div class="btn-row">
+              <button class="btn" id="importBtn" style="display:none;">导入</button>
+              <button class="btn" id="addTempBtn" style="display:none;">新增临时站点</button>
+              <button class="btn primary" id="addSiteBtn">+ 添加计划外普查站点</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:16px 20px 20px;">
+            <div class="empty-area" id="siteEmpty">暂未添加计划外普查站点</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 站点选择弹窗 -->
+  <div class="modal-overlay" id="siteModal" style="display:none;">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <div class="modal-title">站点选择</div>
+        <button class="modal-close" id="closeSiteModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-filter-grid">
+          <div class="field">
+            <label>管理部</label>
+            <select class="control" id="filterDept"><option value="">全部</option><option>桥西管理部</option><option>裕华管理部</option><option>长安管理部</option></select>
+          </div>
+          <div class="field">
+            <label>片区所</label>
+            <select class="control" id="filterZone"><option value="">全部</option><option>桥西片区所</option><option>裕华片区所</option><option>长安片区所</option></select>
+          </div>
+          <div class="field">
+            <label>站点类型</label>
+            <select class="control" id="filterType"><option value="">全部</option><option>用户站</option><option>自管站</option></select>
+          </div>
+          <div class="field">
+            <label>站点名称</label>
+            <input class="control" id="filterName" placeholder="搜索站点名称...">
+          </div>
+          <div class="btn-row" style="align-self:end;">
+            <button class="btn primary" id="doSiteSearch">查询</button>
+            <button class="btn" id="doSiteReset">重置</button>
+          </div>
+        </div>
+
+        <div class="modal-table-info" id="siteSelectedInfo">已选 0 个站点</div>
+        <div class="modal-table-wrap table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="row-check" id="selectAll"></th>
+                <th>换热站编码</th>
+                <th>换热站名称</th>
+                <th>管理部</th>
+                <th>片区所</th>
+                <th>站点类型</th>
+                <th>行政区</th>
+                <th>办事处</th>
+                <th>用热地址</th>
+              </tr>
+            </thead>
+            <tbody id="siteTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-footer-count" id="siteFooterCount">已选 0 个站点</div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelSiteModal">取消</button>
+          <button class="btn primary" id="confirmSiteModal">确认添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增临时站点弹窗 -->
+  <div class="modal-overlay" id="tempSiteModal" style="display:none;">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">新增临时站点</div>
+          <div class="modal-subtitle">临时站点仅属于当前任务，不写入正式站点档案</div>
+        </div>
+        <button class="modal-close" id="closeTempModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="temp-form-grid">
+          <div class="field">
+            <label for="tempType"><span class="required">*</span>站点类型</label>
+            <select class="control" id="tempType">
+              <option value="自管站">自管站</option>
+              <option value="用户站">用户站</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tempDept"><span class="required">*</span>管理部</label>
+            <select class="control" id="tempDept">
+              <option value="">请选择</option>
+              <option>桥西管理部</option>
+              <option>裕华管理部</option>
+              <option>长安管理部</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tempZone"><span class="required">*</span>片区所</label>
+            <select class="control" id="tempZone" disabled>
+              <option value="">请先选择管理部</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="tempName"><span class="required">*</span>换热站名称</label>
+            <input class="control" id="tempName" placeholder="请输入换热站名称">
+          </div>
+          <div class="field">
+            <label for="tempCode">用户/站点编码</label>
+            <input class="control" id="tempCode" placeholder="9位字母或数字，可不填" maxlength="9">
+          </div>
+          <!-- 自管站：行政区 / 用户站：用户全称 -->
+          <div class="field" id="tempDistrictWrap">
+            <label for="tempDistrict"><span class="required">*</span>行政区</label>
+            <input class="control" id="tempDistrict" placeholder="请输入行政区">
+          </div>
+          <div class="field" id="tempFullNameWrap" style="display:none;">
+            <label for="tempFullName"><span class="required">*</span>用户全称</label>
+            <input class="control" id="tempFullName" placeholder="请输入用户全称">
+          </div>
+
+          <!-- 用户站：简称/行政区/办事处 -->
+          <div class="field" id="tempShortWrap" style="display:none;">
+            <label for="tempShort"><span class="required">*</span>简称</label>
+            <input class="control" id="tempShort" placeholder="请输入简称">
+          </div>
+          <div class="field" id="tempDistrict2Wrap" style="display:none;">
+            <label for="tempDistrict2"><span class="required">*</span>行政区</label>
+            <input class="control" id="tempDistrict2" placeholder="请输入行政区">
+          </div>
+          <div class="field" id="tempOffice2Wrap" style="display:none;">
+            <label for="tempOffice2"><span class="required">*</span>办事处</label>
+            <input class="control" id="tempOffice2" placeholder="请输入办事处">
+          </div>
+
+          <!-- 自管站：办事处/联系人/联系电话 -->
+          <div class="field" id="tempOfficeWrap">
+            <label for="tempOffice"><span class="required">*</span>办事处</label>
+            <input class="control" id="tempOffice" placeholder="请输入办事处">
+          </div>
+          <div class="field" id="tempContactWrap">
+            <label for="tempContact"><span class="required">*</span>联系人</label>
+            <input class="control" id="tempContact" placeholder="请输入联系人">
+          </div>
+          <div class="field" id="tempPhoneWrap">
+            <label for="tempPhone"><span class="required">*</span>联系电话</label>
+            <input class="control" id="tempPhone" placeholder="请输入联系电话">
+          </div>
+
+          <div class="field field-full" id="tempAddressWrap">
+            <label for="tempAddress"><span class="required">*</span>用热地址</label>
+            <input class="control" id="tempAddress" placeholder="请输入用热地址">
+          </div>
+
+          <div class="field field-full">
+            <label for="tempRemark"><span class="required">*</span>备注</label>
+            <textarea class="textarea" id="tempRemark" placeholder="请输入备注"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelTempModal">取消</button>
+          <button class="btn primary" id="confirmTempModal">保存并添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入弹窗 -->
+  <div class="modal-overlay" id="importModal" style="display:none;">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title">导入</div>
+        <button class="modal-close" id="closeImportModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="importUploadArea" style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:40px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;">
+          <div style="font-size:36px;margin-bottom:12px;color:var(--muted);">&#x25E9;</div>
+          <div style="font-size:14px;color:var(--text);margin-bottom:6px;">点击或拖拽文件到此处上传</div>
+          <div style="font-size:12px;color:var(--muted);">支持 .xlsx、.xls 格式，单次最多上传 500 条</div>
+          <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none;">
+        </div>
+        <div id="importFileInfo" style="display:none;margin-top:14px;padding:12px 16px;background:var(--primary-soft);border:1px solid var(--primary-border);border-radius:var(--radius-sm);display:none;align-items:center;gap:10px;">
+          <span style="font-size:18px;">&#x2630;</span>
+          <span id="importFileName" style="flex:1;font-size:13px;color:var(--text);"></span>
+          <span id="importFileSize" style="font-size:12px;color:var(--muted);"></span>
+          <a style="color:var(--danger);cursor:pointer;font-size:13px;" id="removeImportFile">删除</a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelImportModal">取消</button>
+          <button class="btn primary" id="confirmImportBtn" disabled>确认导入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 菜单父子级展开/收起
+    var menuParent = document.querySelector('.menu-parent');
+    var subItems = document.querySelectorAll('.menu-child');
+    var menuArrow = document.getElementById('menuArrow');
+    menuParent.addEventListener('click', function() {
+      menuArrow.classList.toggle('collapsed');
+      for (var m = 0; m < subItems.length; m++) {
+        subItems[m].classList.toggle('menu-collapsed');
+      }
+    });
+
+    // 站点模拟数据
+    var sites = [
+      { id:'60218B001', name:'裕华区中心站', dept:'裕华管理部', zone:'裕华片区所', type:'用户站', district:'裕华区', office:'裕东街道', address:'裕华区槐安路与翟营大街交叉口东行200米路北', survey:'是' },
+      { id:'60218B002', name:'长安区东站', dept:'长安管理部', zone:'长安片区所', type:'用户站', district:'长安区', office:'建北街道', address:'长安区中山东路与建设大街交叉口北行100米路东', survey:'是' },
+      { id:'60218B003', name:'桥西区南站', dept:'桥西管理部', zone:'桥西片区所', type:'自管站', district:'桥西区', office:'东里街道', address:'桥西区中华南大街与槐安路交叉口南行150米路西', survey:'否' },
+      { id:'60218B004', name:'裕华区万达站', dept:'裕华管理部', zone:'裕华片区所', type:'用户站', district:'裕华区', office:'裕华路街道', address:'裕华区槐中路与建华大街交叉口东南角', survey:'是' },
+      { id:'60218B005', name:'长安区西站', dept:'长安管理部', zone:'长安片区所', type:'自管站', district:'长安区', office:'青园街道', address:'长安区和平路与友谊大街交叉口西行200米', survey:'否' },
+      { id:'60218B006', name:'桥西区北站', dept:'桥西管理部', zone:'桥西片区所', type:'用户站', district:'桥西区', office:'维明街道', address:'桥西区中山路与维明大街交叉口北行50米', survey:'是' },
+      { id:'60218B007', name:'裕华区东南站', dept:'裕华管理部', zone:'裕华片区所', type:'自管站', district:'裕华区', office:'方村街道', address:'裕华区南二环与翟营大街交叉口南行300米', survey:'否' },
+      { id:'60218B008', name:'长安区北站', dept:'长安管理部', zone:'长安片区所', type:'用户站', district:'长安区', office:'胜北街道', address:'长安区建设北大街与光华路交叉口东行100米', survey:'是' },
+      { id:'60218B009', name:'桥西区中心站', dept:'桥西管理部', zone:'桥西片区所', type:'用户站', district:'桥西区', office:'东里街道', address:'桥西区裕华西路与中华大街交叉口北行200米', survey:'是' },
+      { id:'60218B010', name:'裕华区北站', dept:'裕华管理部', zone:'裕华片区所', type:'自管站', district:'裕华区', office:'裕华路街道', address:'裕华区和平东路与体育大街交叉口西北角', survey:'否' },
+      { id:'60218B011', name:'长安区中心站', dept:'长安管理部', zone:'长安片区所', type:'用户站', district:'长安区', office:'青园街道', address:'长安区中山中路与育才街交叉口南行150米', survey:'是' },
+      { id:'60218B012', name:'桥西区东站', dept:'桥西管理部', zone:'桥西片区所', type:'自管站', district:'桥西区', office:'维明街道', address:'桥西区槐安西路与西二环交叉口东北角', survey:'否' }
+    ];
+    var siteSelected = {}; // id -> site object
+    var filteredSites = sites.slice();
+
+    function esc(s) {
+      return String(s).replace(/[&<>'"]/g, function(c) {
+        return { '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c];
+      });
+    }
+
+    function typeTagClass(t) {
+      return t === '用户站' ? 'tag-user-station' : 'tag-self-station';
+    }
+
+    function renderSites() {
+      var tbody = document.getElementById('siteTableBody');
+      if (!filteredSites.length) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:40px 0;">暂无匹配的站点</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filteredSites.map(function(s) {
+        var checked = siteSelected[s.id] ? 'checked' : '';
+        var rowClass = 'site-row' + (siteSelected[s.id] ? ' checked' : '');
+        return '<tr class="' + rowClass + '" data-id="' + s.id + '">' +
+          '<td><input type="checkbox" class="row-check site-pick" data-id="' + s.id + '" ' + checked + '></td>' +
+          '<td>' + esc(s.id) + '</td>' +
+          '<td><strong>' + esc(s.name) + '</strong></td>' +
+          '<td>' + esc(s.dept) + '</td>' +
+          '<td>' + esc(s.zone) + '</td>' +
+          '<td><span class="tag ' + typeTagClass(s.type) + '">' + esc(s.type) + '</span></td>' +
+          '<td>' + esc(s.district) + '</td>' +
+          '<td>' + esc(s.office) + '</td>' +
+          '<td>' + esc(s.address) + '</td>' +
+          '</tr>';
+      }).join('');
+      updateSelectedCount();
+      syncSelectAll();
+    }
+
+    function updateSelectedCount() {
+      var n = Object.keys(siteSelected).length;
+      document.getElementById('siteSelectedInfo').textContent = '已选 ' + n + ' 个站点';
+      document.getElementById('siteFooterCount').textContent = '已选 ' + n + ' 个站点';
+    }
+
+    function syncSelectAll() {
+      var checks = document.querySelectorAll('.site-pick');
+      var allChecked = checks.length > 0 && Array.prototype.every.call(checks, function(c) { return c.checked; });
+      document.getElementById('selectAll').checked = allChecked;
+    }
+
+    function doSiteFilter() {
+      var d = document.getElementById('filterDept').value;
+      var z = document.getElementById('filterZone').value;
+      var t = document.getElementById('filterType').value;
+      var n = document.getElementById('filterName').value.trim().toLowerCase();
+      filteredSites = sites.filter(function(x) {
+        if (d && x.dept !== d) return false;
+        if (z && x.zone !== z) return false;
+        if (t && x.type !== t) return false;
+        if (n && x.name.toLowerCase().indexOf(n) === -1 && x.id.toLowerCase().indexOf(n) === -1) return false;
+        return true;
+      });
+      renderSites();
+    }
+
+    // 弹窗打开/关闭
+    function openSiteModal() {
+      document.getElementById('siteModal').style.display = 'flex';
+    }
+    function closeSiteModal() {
+      document.getElementById('siteModal').style.display = 'none';
+    }
+
+    document.getElementById('addSiteBtn').addEventListener('click', openSiteModal);
+    document.getElementById('closeSiteModal').addEventListener('click', closeSiteModal);
+    document.getElementById('cancelSiteModal').addEventListener('click', closeSiteModal);
+    document.getElementById('scopeSelector').addEventListener('click', function() {
+      alert('可选范围筛选将在后续版本中开放。');
+    });
+
+    // 导入/临时站点按钮显隐
+    var importBtn = document.getElementById('importBtn');
+    var addTempBtn = document.getElementById('addTempBtn');
+    var reasonSelect = document.getElementById('reason');
+    function toggleExtraBtns() {
+      var v = reasonSelect.value;
+      var show = v === '一管到户' || v === '新开户及增容' || v === '趸售用户';
+      importBtn.style.display = show ? '' : 'none';
+      addTempBtn.style.display = show ? '' : 'none';
+    }
+    reasonSelect.addEventListener('change', toggleExtraBtns);
+    importBtn.addEventListener('click', function() {
+      document.getElementById('importModal').style.display = 'flex';
+    });
+
+    // 导入弹窗
+    var importModal = document.getElementById('importModal');
+    var uploadArea = document.getElementById('importUploadArea');
+    var fileInput = document.getElementById('importFile');
+    var fileInfo = document.getElementById('importFileInfo');
+    var fileName = document.getElementById('importFileName');
+    var fileSize = document.getElementById('importFileSize');
+    var confirmImportBtn = document.getElementById('confirmImportBtn');
+
+    uploadArea.addEventListener('click', function() { fileInput.click(); });
+    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); uploadArea.style.borderColor = 'var(--primary)'; uploadArea.style.background = 'var(--primary-soft)'; });
+    uploadArea.addEventListener('dragleave', function() { uploadArea.style.borderColor = ''; uploadArea.style.background = ''; });
+    uploadArea.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadArea.style.borderColor = '';
+      uploadArea.style.background = '';
+      if (e.dataTransfer.files.length) showFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() { if (fileInput.files.length) showFile(fileInput.files[0]); });
+    document.getElementById('removeImportFile').addEventListener('click', function() { fileInfo.style.display = 'none'; fileInput.value = ''; confirmImportBtn.disabled = true; });
+
+    function showFile(file) {
+      fileName.textContent = file.name;
+      var kb = file.size / 1024;
+      fileSize.textContent = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb.toFixed(0) + ' KB';
+      fileInfo.style.display = 'flex';
+      confirmImportBtn.disabled = false;
+    }
+
+    function closeImportModal() { importModal.style.display = 'none'; fileInfo.style.display = 'none'; fileInput.value = ''; confirmImportBtn.disabled = true; }
+    document.getElementById('closeImportModal').addEventListener('click', closeImportModal);
+    document.getElementById('cancelImportModal').addEventListener('click', closeImportModal);
+    document.getElementById('confirmImportBtn').addEventListener('click', function() {
+      alert('文件导入功能将在后续版本中开放。');
+      closeImportModal();
+    });
+
+    // 新增临时站点弹窗
+    var tempModal = document.getElementById('tempSiteModal');
+    var tempType = document.getElementById('tempType');
+    var tempDept = document.getElementById('tempDept');
+    var tempZone = document.getElementById('tempZone');
+    var zoneMap = {
+      '桥西管理部': ['桥西片区所'],
+      '裕华管理部': ['裕华片区所'],
+      '长安管理部': ['长安片区所']
+    };
+
+    function openTempModal() {
+      var v = reasonSelect.value;
+      // 一管到户仅允许自管站
+      if (v === '一管到户') {
+        tempType.value = '自管站';
+        tempType.disabled = true;
+      } else {
+        tempType.disabled = false;
+      }
+      syncTempType();
+      tempModal.style.display = 'flex';
+    }
+    function closeTempModal() {
+      tempModal.style.display = 'none';
+      clearTempForm();
+    }
+    function clearTempForm() {
+      var inputs = tempModal.querySelectorAll('input, select, textarea');
+      for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].id === 'tempType') continue;
+        inputs[i].value = '';
+      }
+      tempZone.innerHTML = '<option value="">请先选择管理部</option>';
+      tempZone.disabled = true;
+    }
+    function syncTempType() {
+      var isUser = tempType.value === '用户站';
+      // 自管站用：行政区 + 办事处/联系人/联系电话 + 用热地址
+      // 用户站用：用户全称 + 简称/行政区/办事处 + 联系人/联系电话 + 用热地址
+      document.getElementById('tempDistrictWrap').style.display = isUser ? 'none' : '';
+      document.getElementById('tempFullNameWrap').style.display = isUser ? '' : 'none';
+      document.getElementById('tempShortWrap').style.display = isUser ? '' : 'none';
+      document.getElementById('tempDistrict2Wrap').style.display = isUser ? '' : 'none';
+      document.getElementById('tempOffice2Wrap').style.display = isUser ? '' : 'none';
+      document.getElementById('tempOfficeWrap').style.display = isUser ? 'none' : '';
+      document.getElementById('tempContactWrap').style.display = isUser ? '' : '';
+      document.getElementById('tempPhoneWrap').style.display = isUser ? '' : '';
+    }
+    function updateZone() {
+      var d = tempDept.value;
+      if (!d) {
+        tempZone.innerHTML = '<option value="">请先选择管理部</option>';
+        tempZone.disabled = true;
+        return;
+      }
+      var zones = zoneMap[d] || [];
+      tempZone.disabled = false;
+      tempZone.innerHTML = '<option value="">请选择</option>' + zones.map(function(z) { return '<option>' + z + '</option>'; }).join('');
+    }
+    tempType.addEventListener('change', syncTempType);
+    tempDept.addEventListener('change', updateZone);
+    addTempBtn.addEventListener('click', openTempModal);
+    document.getElementById('closeTempModal').addEventListener('click', closeTempModal);
+    document.getElementById('cancelTempModal').addEventListener('click', closeTempModal);
+
+    document.getElementById('confirmTempModal').addEventListener('click', function() {
+      var isUser = tempType.value === '用户站';
+      var data = {
+        type: tempType.value,
+        dept: tempDept.value,
+        zone: tempZone.value,
+        name: document.getElementById('tempName').value.trim(),
+        code: document.getElementById('tempCode').value.trim(),
+        address: document.getElementById('tempAddress').value.trim(),
+        remark: document.getElementById('tempRemark').value.trim()
+      };
+      if (isUser) {
+        data.fullName = document.getElementById('tempFullName').value.trim();
+        data.short = document.getElementById('tempShort').value.trim();
+        data.district = document.getElementById('tempDistrict2').value.trim();
+        data.office = document.getElementById('tempOffice2').value.trim();
+        data.contact = document.getElementById('tempContact').value.trim();
+        data.phone = document.getElementById('tempPhone').value.trim();
+      } else {
+        data.district = document.getElementById('tempDistrict').value.trim();
+        data.office = document.getElementById('tempOffice').value.trim();
+        data.contact = document.getElementById('tempContact').value.trim();
+        data.phone = document.getElementById('tempPhone').value.trim();
+      }
+      // 必填校验（简化：必填字段都非空）
+      var required = [data.type, data.dept, data.zone, data.name, data.district, data.office, data.contact, data.phone, data.address, data.remark];
+      if (isUser) required.push(data.fullName, data.short);
+      var missing = required.filter(function(v) { return !v; });
+      if (missing.length) {
+        alert('请填写所有必填项（标 * 字段）');
+        return;
+      }
+      // 临时站点的伪 ID：TEMP- + 时间戳
+      var tempId = 'TEMP-' + Date.now();
+      var site = {
+        id: tempId,
+        name: data.name,
+        dept: data.dept,
+        zone: data.zone,
+        type: data.type,
+        district: data.district,
+        office: data.office,
+        address: data.address,
+        isTemp: true
+      };
+      siteSelected[tempId] = site;
+      // 渲染到外层列表
+      renderSelectedList();
+      // 清空表单不关闭，方便连续录入
+      clearTempForm();
+    });
+
+    function renderSelectedList() {
+      var list = Object.values(siteSelected);
+      var empty = document.getElementById('siteEmpty');
+      var countEl = document.getElementById('scopeCount');
+      countEl.textContent = '已选 ' + list.length + ' 项';
+      if (list.length === 0) {
+        empty.style.display = 'flex';
+        empty.textContent = '暂未添加计划外普查站点';
+        empty.style.minHeight = '320px';
+        empty.style.padding = '';
+        empty.style.border = '';
+        empty.style.background = '';
+        return;
+      }
+      empty.style.display = 'block';
+      empty.textContent = '';
+      empty.style.minHeight = 'auto';
+      empty.style.padding = '0';
+      empty.style.border = 'none';
+      empty.style.background = 'transparent';
+      empty.innerHTML = '<div class="table-scroll" style="border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">' +
+        '<table><thead><tr><th>换热站编码</th><th>换热站名称</th><th>管理部</th><th>片区所</th><th>站点类型</th><th>操作</th></tr></thead><tbody>' +
+        list.map(function(s) {
+          var codeHtml = s.isTemp ? '<span style="color:var(--muted);font-size:12px;">临时</span>' : esc(s.id);
+          return '<tr><td>' + codeHtml + '</td><td><strong>' + esc(s.name) + '</strong></td><td>' + esc(s.dept) + '</td><td>' + esc(s.zone) + '</td><td><span class="tag ' + typeTagClass(s.type) + '">' + esc(s.type) + '</span></td><td><a class="action-link" data-remove="' + s.id + '">移除</a></td></tr>';
+        }).join('') +
+        '</tbody></table></div>';
+      empty.querySelectorAll('[data-remove]').forEach(function(a) {
+        a.addEventListener('click', function() {
+          var id = a.getAttribute('data-remove');
+          delete siteSelected[id];
+          renderSelectedList();
+          // 同步弹窗内状态
+          var check = document.querySelector('.site-pick[data-id="' + id + '"]');
+          if (check) { check.checked = false; check.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      });
+    }
+
+    document.getElementById('doSiteSearch').addEventListener('click', doSiteFilter);
+    document.getElementById('doSiteReset').addEventListener('click', function() {
+      var inputs = document.querySelectorAll('.modal-filter-grid input');
+      for (var i = 0; i < inputs.length; i++) { inputs[i].value = ''; }
+      var selects = document.querySelectorAll('.modal-filter-grid select');
+      for (var j = 0; j < selects.length; j++) { selects[j].value = ''; }
+      filteredSites = sites.slice();
+      renderSites();
+    });
+
+    // 表格内复选框
+    document.getElementById('siteTableBody').addEventListener('change', function(e) {
+      var cb = e.target.closest('.site-pick');
+      if (!cb) return;
+      var id = cb.getAttribute('data-id');
+      var row = cb.closest('tr');
+      if (cb.checked) {
+        var site = sites.filter(function(x) { return x.id === id; })[0];
+        if (site) siteSelected[id] = site;
+        if (row) row.classList.add('checked');
+      } else {
+        delete siteSelected[id];
+        if (row) row.classList.remove('checked');
+      }
+      updateSelectedCount();
+      syncSelectAll();
+    });
+    // 整行点击勾选
+    document.getElementById('siteTableBody').addEventListener('click', function(e) {
+      if (e.target.closest('.site-pick')) return;
+      var row = e.target.closest('.site-row');
+      if (!row) return;
+      var cb = row.querySelector('.site-pick');
+      if (cb) {
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    // 表头全选
+    document.getElementById('selectAll').addEventListener('change', function() {
+      var checks = document.querySelectorAll('.site-pick');
+      for (var k = 0; k < checks.length; k++) {
+        checks[k].checked = this.checked;
+        checks[k].dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    // 确认添加：将所选站点填充到外层
+    document.getElementById('confirmSiteModal').addEventListener('click', function() {
+      renderSelectedList();
+      closeSiteModal();
+    });
+
+    // 回车触发搜索
+    var siteInputs = document.querySelectorAll('.modal-filter-grid input');
+    for (var n = 0; n < siteInputs.length; n++) {
+      siteInputs[n].addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doSiteFilter();
+      });
+    }
+
+    renderSites();
+  </script>
+</body>
+</html>
