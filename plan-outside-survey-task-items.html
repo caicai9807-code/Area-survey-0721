@@ -93,72 +93,6 @@
       border-top-left-radius: 0;
       border-top-right-radius: 0;
     }
-
-    /* 状态流转参考卡 */
-    .flow-card {
-      margin-bottom: 16px;
-    }
-    .flow-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px;
-      border-bottom: 1px solid #edf1f7;
-    }
-    .flow-card-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .flow-toggle {
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .flow-toggle .arrow {
-      transition: transform 0.2s;
-      display: inline-block;
-    }
-    .flow-toggle.collapsed .arrow {
-      transform: rotate(-90deg);
-    }
-    .flow-card-body {
-      padding: 0;
-    }
-    .flow-card-body.collapsed {
-      display: none;
-    }
-    .flow-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .flow-table th, .flow-table td {
-      padding: 12px 16px;
-      text-align: left;
-      border-bottom: 1px solid #edf1f7;
-      font-size: 13px;
-      color: #495870;
-      vertical-align: top;
-    }
-    .flow-table thead th {
-      background: #f0f5ff;
-      color: #597ef7;
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .flow-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-    .flow-status {
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-    }
   </style>
 </head>
 <body>
@@ -210,66 +144,6 @@
         <div class="info-banner slim" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
           <p style="flex:1;"><strong>片区所长任务范围：</strong>仅所长可分配、转派、改派和审核本所任务。</p>
           <span class="scope-tag">数据范围：桥西片区所</span>
-        </div>
-
-        <div class="card flow-card">
-          <div class="flow-card-header">
-            <div class="flow-card-title">普查任务</div>
-            <button class="flow-toggle" id="flowToggle">收起 <span class="arrow">&#x25BC;</span></button>
-          </div>
-          <div class="flow-card-body" id="flowBody">
-            <table class="flow-table">
-              <thead>
-                <tr>
-                  <th style="width:140px;">状态</th>
-                  <th>触发操作</th>
-                  <th>支持的操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="flow-status">待分配</td>
-                  <td>计划"已下发"后，系统自动为计划内每个站点生成一条任务，并分配至对应的"自管站（片区所）"。此时任务等待所长分配具体普查员。</td>
-                  <td>自管站所长可以进行 设置普查人员操作，设置普查人员后可进行任务下发</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">进行中</td>
-                  <td>自管站所长将任务"分配"给了具体的普查员。</td>
-                  <td>普查员可进行"填报/导入"、"暂存"数据，并最终"上报"。上一级节点审核前都可以进行撤回操作</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">站长审核</td>
-                  <td>普查员完成数据填报，点击"上报"按钮。</td>
-                  <td>换热站站长进行"审核"（通过/不通过）</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">所长审核</td>
-                  <td>自管站所长"审核"任务，并选择"通过"。</td>
-                  <td>片区所审核人员进行"审核"（通过/不通过）</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">管理部审核</td>
-                  <td>片区所所长"审核"任务，并选择"通过"。</td>
-                  <td>管理部审核人员进行"审核"（通过/不通过）</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">已退回</td>
-                  <td>在站长审核、所长审核、管理部审核状态下，审核人点击"审核"并选择"不通过"，填写审批意见。</td>
-                  <td>任务将退回至其上一环节负责人</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">已结束</td>
-                  <td>管理部审核人进行最终"审核"，并选择"通过"。</td>
-                  <td>任务全流程完成，数据生效。只可进行查看</td>
-                </tr>
-                <tr>
-                  <td class="flow-status">进行中（已撤回）</td>
-                  <td>普查员点击撤回按钮</td>
-                  <td>完成数据填报并上报后 站长进行审核之前都可以进行撤回操作，撤回后普查员可以对填报的数据进行修改并进行再次上报</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
 
         <section class="card">
@@ -363,13 +237,6 @@
       }
     });
 
-    // 状态流转卡 收起/展开
-    var flowToggle = document.getElementById('flowToggle');
-    var flowBody = document.getElementById('flowBody');
-    flowToggle.addEventListener('click', function() {
-      var collapsed = flowBody.classList.toggle('collapsed');
-      flowToggle.classList.toggle('collapsed', collapsed);
-      flowToggle.firstChild.textContent = collapsed ? '展开' : '收起';
     });
 
     // 模拟数据
