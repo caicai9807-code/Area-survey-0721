@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>计划外普查任务 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .page-subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .source-selector {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid var(--primary-border);
+      background: #fff;
+      color: var(--primary);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .source-selector:hover { background: var(--primary-soft); }
+    .scope-tag {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .filter-grid-4 .field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-grid-4 .field label {
+      white-space: nowrap;
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+    .filter-grid-4 .field .control {
+      flex: 1;
+      min-width: 0;
+    }
+    .filter-grid-4 {
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+    }
+
+    /* Tabs 普查原因 */
+    .reason-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 20px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+    .reason-tab {
+      position: relative;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .reason-tab .tab-count {
+      margin-left: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .reason-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .reason-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: -1px;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+    .reason-tab:hover { color: var(--primary); }
+
+    .card.no-top-radius {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    /* 状态流转参考卡 */
+    .flow-card {
+      margin-bottom: 16px;
+    }
+    .flow-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #edf1f7;
+    }
+    .flow-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .flow-toggle {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .flow-toggle .arrow {
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+    .flow-toggle.collapsed .arrow {
+      transform: rotate(-90deg);
+    }
+    .flow-card-body {
+      padding: 0;
+    }
+    .flow-card-body.collapsed {
+      display: none;
+    }
+    .flow-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .flow-table th, .flow-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #edf1f7;
+      font-size: 13px;
+      color: #495870;
+      vertical-align: top;
+    }
+    .flow-table thead th {
+      background: #f0f5ff;
+      color: #597ef7;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .flow-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .flow-status {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">&#x25A6;</div>
+        <span>面积普查管理系统</span>
+        <span class="chip" style="background:rgba(255,255,255,0.15);font-weight:600;">原型环境</span>
+      </div>
+      <div class="top-actions">
+        <div class="top-dropdown">
+          <span class="top-label">演示身份:</span> 计划管理部/业务管理员 <span style="font-size:10px;margin-left:2px;">&#x25BC;</span>
+        </div>
+        <div class="avatar">张</div>
+        <span>张敏</span>
+      </div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false">
+            <span class="menu-icon">&#x25A3;</span> 计划外面积普查
+            <span class="menu-arrow" id="menuArrow">&#x25B2;</span>
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务管理
+          </a>
+          <a class="menu-item active menu-child" href="plan-outside-survey-task-items.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务
+          </a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb">
+          <a href="#">面积普查</a>
+          <span>/</span>
+          <span>计划外普查任务</span>
+        </nav>
+
+        <div class="page-header-row">
+          <div>
+            <div class="page-title" style="font-size:20px;font-weight:700;color:var(--text);margin:0 0 4px;">计划外普查任务</div>
+            <p class="page-subtitle">按角色处理计划外任务的人员分配、填报、审核和退回</p>
+          </div>
+          <div class="source-selector">任务来源：计划外 <span style="font-size:10px;">&#x25BC;</span></div>
+        </div>
+
+        <div class="info-banner slim" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <p style="flex:1;"><strong>片区所长任务范围：</strong>仅所长可分配、转派、改派和审核本所任务。</p>
+          <span class="scope-tag">数据范围：桥西片区所</span>
+        </div>
+
+        <div class="card flow-card">
+          <div class="flow-card-header">
+            <div class="flow-card-title">普查任务</div>
+            <button class="flow-toggle" id="flowToggle">收起 <span class="arrow">&#x25BC;</span></button>
+          </div>
+          <div class="flow-card-body" id="flowBody">
+            <table class="flow-table">
+              <thead>
+                <tr>
+                  <th style="width:140px;">状态</th>
+                  <th>触发操作</th>
+                  <th>支持的操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="flow-status">待分配</td>
+                  <td>计划"已下发"后，系统自动为计划内每个站点生成一条任务，并分配至对应的"自管站（片区所）"。此时任务等待所长分配具体普查员。</td>
+                  <td>自管站所长可以进行 设置普查人员操作，设置普查人员后可进行任务下发</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">进行中</td>
+                  <td>自管站所长将任务"分配"给了具体的普查员。</td>
+                  <td>普查员可进行"填报/导入"、"暂存"数据，并最终"上报"。上一级节点审核前都可以进行撤回操作</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">站长审核</td>
+                  <td>普查员完成数据填报，点击"上报"按钮。</td>
+                  <td>换热站站长进行"审核"（通过/不通过）</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">所长审核</td>
+                  <td>自管站所长"审核"任务，并选择"通过"。</td>
+                  <td>片区所审核人员进行"审核"（通过/不通过）</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">管理部审核</td>
+                  <td>片区所所长"审核"任务，并选择"通过"。</td>
+                  <td>管理部审核人员进行"审核"（通过/不通过）</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">已退回</td>
+                  <td>在站长审核、所长审核、管理部审核状态下，审核人点击"审核"并选择"不通过"，填写审批意见。</td>
+                  <td>任务将退回至其上一环节负责人</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">已结束</td>
+                  <td>管理部审核人进行最终"审核"，并选择"通过"。</td>
+                  <td>任务全流程完成，数据生效。只可进行查看</td>
+                </tr>
+                <tr>
+                  <td class="flow-status">进行中（已撤回）</td>
+                  <td>普查员点击撤回按钮</td>
+                  <td>完成数据填报并上报后 站长进行审核之前都可以进行撤回操作，撤回后普查员可以对填报的数据进行修改并进行再次上报</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <section class="card">
+          <div class="card-header"><div class="card-title">筛选条件</div></div>
+          <div class="card-body">
+            <div class="filter-grid-4">
+              <div class="field">
+                <label>站点编码</label>
+                <input class="control" id="filterCode" placeholder="请输入站点编码">
+              </div>
+              <div class="field">
+                <label>站点名称</label>
+                <input class="control" id="filterName" placeholder="请输入站点名称">
+              </div>
+              <div class="field">
+                <label>站点类型</label>
+                <select class="control" id="filterType">
+                  <option value="">全部</option>
+                  <option>自管站</option>
+                  <option>用户站</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>任务状态</label>
+                <select class="control" id="filterStatus">
+                  <option value="">全部</option>
+                  <option>待分配</option>
+                  <option>进行中</option>
+                  <option>站长审核</option>
+                  <option>所长审核</option>
+                  <option>管理部审核</option>
+                  <option>已退回</option>
+                  <option>已结束</option>
+                  <option>进行中（已撤回）</option>
+                </select>
+              </div>
+              <div class="btn-row" style="grid-column:5;justify-self:end;">
+                <button class="btn primary" id="doSearch">查询</button>
+                <button class="btn" id="doReset">重置</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="reason-tabs" id="reasonTabs">
+          <div class="reason-tab active" data-reason="all">全部 <span class="tab-count" id="cntAll">1</span></div>
+          <div class="reason-tab" data-reason="面积变化">面积变化 <span class="tab-count" id="cntArea">1</span></div>
+          <div class="reason-tab" data-reason="一管到户">一管到户 <span class="tab-count" id="cntPipe">0</span></div>
+          <div class="reason-tab" data-reason="新开户及增容">新开户及增容 <span class="tab-count" id="cntNew">0</span></div>
+          <div class="reason-tab" data-reason="趸售用户">趸售用户 <span class="tab-count" id="cntDun">0</span></div>
+        </div>
+
+        <section class="card no-top-radius">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>序号</th>
+                  <th>任务名称</th>
+                  <th>站点编码</th>
+                  <th>站点名称</th>
+                  <th>站点类型</th>
+                  <th>普查原因</th>
+                  <th>管理部</th>
+                  <th>片区所</th>
+                  <th>普查人员</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="taskBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <div class="page-left"><span id="totalText">共 1 个项目</span><span id="pageSizeText">10条/页</span></div>
+            <div class="page-box" id="pageBox"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // 菜单父子级展开/收起
+    var menuParent = document.querySelector('.menu-parent');
+    var subItems = document.querySelectorAll('.menu-child');
+    var menuArrow = document.getElementById('menuArrow');
+    menuParent.addEventListener('click', function() {
+      menuArrow.classList.toggle('collapsed');
+      for (var m = 0; m < subItems.length; m++) {
+        subItems[m].classList.toggle('menu-collapsed');
+      }
+    });
+
+    // 状态流转卡 收起/展开
+    var flowToggle = document.getElementById('flowToggle');
+    var flowBody = document.getElementById('flowBody');
+    flowToggle.addEventListener('click', function() {
+      var collapsed = flowBody.classList.toggle('collapsed');
+      flowToggle.classList.toggle('collapsed', collapsed);
+      flowToggle.firstChild.textContent = collapsed ? '展开' : '收起';
+    });
+
+    // 模拟数据
+    var tasks = [
+      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配' },
+      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明' },
+      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩' },
+      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰' },
+      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦' },
+      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁' },
+      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋' },
+      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏' },
+      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强' },
+      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配' }
+    ];
+    var currentTab = 'all';
+    var pageSize = 10;
+    var currentPage = 1;
+
+    function typeTagClass(t) { return t === '用户站' ? 'tag-user-station' : 'tag-self-station'; }
+
+    function esc(s) {
+      return String(s).replace(/[&<>'"]/g, function(c) {
+        return { '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c];
+      });
+    }
+
+    function doFilter() {
+      var code = document.getElementById('filterCode').value.trim().toLowerCase();
+      var name = document.getElementById('filterName').value.trim().toLowerCase();
+      var type = document.getElementById('filterType').value;
+      var status = document.getElementById('filterStatus').value;
+      var list = tasks.filter(function(t) {
+        if (currentTab !== 'all' && t.reason !== currentTab) return false;
+        if (code && t.code.toLowerCase().indexOf(code) === -1) return false;
+        if (name && t.name2.toLowerCase().indexOf(name) === -1) return false;
+        if (type && t.type !== type) return false;
+        if (status && t.worker !== status) return false; // 简化：状态复用 worker 字段
+        return true;
+      });
+      return list;
+    }
+
+    function updateTabCounts() {
+      document.getElementById('cntAll').textContent = tasks.length;
+      document.getElementById('cntArea').textContent = tasks.filter(function(t) { return t.reason === '面积变化'; }).length;
+      document.getElementById('cntPipe').textContent = tasks.filter(function(t) { return t.reason === '一管到户'; }).length;
+      document.getElementById('cntNew').textContent = tasks.filter(function(t) { return t.reason === '新开户及增容'; }).length;
+      document.getElementById('cntDun').textContent = tasks.filter(function(t) { return t.reason === '趸售用户'; }).length;
+    }
+
+    function render() {
+      var list = doFilter();
+      var totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      var rows = list.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+      document.getElementById('totalText').textContent = '共 ' + list.length + ' 个项目';
+
+      var tbody = document.getElementById('taskBody');
+      if (rows.length) {
+        tbody.innerHTML = rows.map(function(t) {
+          var workerHtml = t.worker === '待分配'
+            ? '<span style="color:var(--muted);">' + esc(t.worker) + '</span>'
+            : esc(t.worker);
+          return '<tr>' +
+            '<td>' + t.id + '</td>' +
+            '<td><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">' + esc(t.name) + '</a></td>' +
+            '<td>' + esc(t.code) + '</td>' +
+            '<td><strong>' + esc(t.name2) + '</strong></td>' +
+            '<td><span class="tag ' + typeTagClass(t.type) + '">' + esc(t.type) + '</span></td>' +
+            '<td>' + esc(t.reason) + '</td>' +
+            '<td>' + esc(t.dept) + '</td>' +
+            '<td>' + esc(t.zone) + '</td>' +
+            '<td>' + workerHtml + '</td>' +
+            '<td><div class="action-row"><a class="action-link" href="#">设置人员</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
+            '</tr>';
+        }).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+      }
+
+      var box = document.getElementById('pageBox');
+      var html = '<button class="page-btn text" ' + (currentPage === 1 ? 'disabled' : '') + ' data-page="' + (currentPage - 1) + '">上一页</button>';
+      for (var p = 1; p <= totalPages; p++) {
+        html += '<button class="page-number ' + (p === currentPage ? 'active' : '') + '" data-page="' + p + '">' + p + '</button>';
+      }
+      html += '<button class="page-btn text" ' + (currentPage === totalPages ? 'disabled' : '') + ' data-page="' + (currentPage + 1) + '">下一页</button>';
+      box.innerHTML = html;
+    }
+
+    // Tabs 切换
+    document.getElementById('reasonTabs').addEventListener('click', function(e) {
+      var tab = e.target.closest('.reason-tab');
+      if (!tab) return;
+      document.querySelectorAll('.reason-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentTab = tab.getAttribute('data-reason');
+      currentPage = 1;
+      render();
+    });
+
+    // 筛选/重置
+    document.getElementById('doSearch').addEventListener('click', function() { currentPage = 1; render(); });
+    document.getElementById('doReset').addEventListener('click', function() {
+      var inputs = document.querySelectorAll('.filter-grid-4 input');
+      for (var i = 0; i < inputs.length; i++) inputs[i].value = '';
+      var selects = document.querySelectorAll('.filter-grid-4 select');
+      for (var j = 0; j < selects.length; j++) selects[j].value = '';
+      currentPage = 1;
+      render();
+    });
+    document.querySelectorAll('.filter-grid-4 input').forEach(function(input) {
+      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { currentPage = 1; render(); } });
+    });
+
+    // 分页
+    document.getElementById('pageBox').addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-page]');
+      if (btn && !btn.disabled) {
+        currentPage = Number(btn.dataset.page);
+        render();
+      }
+    });
+
+    updateTabCounts();
+    render();
+  </script>
+</body>
+</html>
