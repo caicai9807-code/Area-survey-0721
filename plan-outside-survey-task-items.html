@@ -32,7 +32,7 @@
     }
     .filter-grid-4 {
       display: grid;
-      grid-template-columns: repeat(6, 1fr) auto auto;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 18px 20px;
       align-items: end;
     }
@@ -56,8 +56,43 @@
     }
     .filter-grid-4 .btn-row {
       align-self: end;
+      justify-content: flex-end;
       gap: 8px;
     }
+
+    .compact-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .dispatch-pending, .audit-pending { background: #f2f4f8; color: #78849b; }
+    .dispatch-done { background: #e8efff; color: var(--primary); }
+    .audit-zone, .audit-engineer { background: #fff7e8; color: #d48806; }
+    .audit-director { background: #f0f5ff; color: #597ef7; }
+    .audit-approved { background: #f0fff4; color: var(--success); }
+    .audit-returned { background: #fff0f0; color: var(--danger); }
+    .sortable-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .sortable-header:hover,
+    .sortable-header.active { color: var(--primary); }
+    .sort-icon { font-size: 11px; letter-spacing: -2px; }
 
     /* Tabs 普查原因 */
     .reason-tabs {
@@ -188,6 +223,7 @@
     .modal.modal-md { width: 760px; }
     @media (max-width: 900px) {
       .worker-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
@@ -266,17 +302,23 @@
                 </select>
               </div>
               <div class="field">
-                <label>任务状态</label>
-                <select class="control" id="filterStatus">
+                <label>下发状态</label>
+                <select class="control" id="filterDispatchStatus">
                   <option value="">全部</option>
-                  <option>待分配</option>
-                  <option>进行中</option>
-                  <option>站长审核</option>
+                  <option>未下发</option>
+                  <option>已下发</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>审核状态</label>
+                <select class="control" id="filterAuditStatus">
+                  <option value="">全部</option>
+                  <option>待填报</option>
                   <option>所长审核</option>
-                  <option>管理部审核</option>
+                  <option>专工审核</option>
+                  <option>主任审核</option>
+                  <option>审核通过</option>
                   <option>已退回</option>
-                  <option>已结束</option>
-                  <option>进行中（已撤回）</option>
                 </select>
               </div>
               <div class="field">
@@ -317,6 +359,9 @@
                   <th>管理部</th>
                   <th>片区所</th>
                   <th>普查人员</th>
+                  <th>下发状态</th>
+                  <th>审核状态</th>
+                  <th><button class="sortable-header" id="timeSortBtn" type="button" aria-label="最近操作时间，点击按降序排序">最近操作时间 <span class="sort-icon" id="timeSortIcon">⇅</span></button></th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -375,22 +420,46 @@
 
     // 模拟数据
     var tasks = [
-      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配', status: '待分配', time: '2026-07-16' },
-      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明', status: '待分配', time: '2026-07-18' },
-      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩', status: '待分配', time: '2026-07-16' },
-      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰', status: '待分配', time: '2026-07-17' },
-      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦', status: '待分配', time: '2026-07-20' },
-      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁', status: '待分配', time: '2026-07-21' },
-      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋', status: '待分配', time: '2026-07-15' },
-      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏', status: '待分配', time: '2026-07-14' },
-      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强', status: '待分配', time: '2026-07-19' },
-      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配', status: '待分配', time: '2026-07-22' }
+      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-16 09:20' },
+      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-18 11:05' },
+      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩', dispatchStatus: '已下发', auditStatus: '待填报', lastOperationTime: '2026-07-16 15:40' },
+      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰', dispatchStatus: '已下发', auditStatus: '所长审核', lastOperationTime: '2026-07-17 16:30' },
+      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦', dispatchStatus: '已下发', auditStatus: '专工审核', lastOperationTime: '2026-07-20 10:15' },
+      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁', dispatchStatus: '已下发', auditStatus: '主任审核', lastOperationTime: '2026-07-21 09:45' },
+      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋', dispatchStatus: '已下发', auditStatus: '审核通过', lastOperationTime: '2026-07-15 17:20' },
+      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏', dispatchStatus: '已下发', auditStatus: '已退回', lastOperationTime: '2026-07-14 14:10' },
+      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-19 13:25' },
+      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-22 08:50' }
     ];
     var currentTab = 'all';
     var pageSize = 10;
     var currentPage = 1;
+    var timeSortDirection = null;
 
     function typeTagClass(t) { return t === '用户站' ? 'tag-user-station' : 'tag-self-station'; }
+    function dispatchTagClass(status) { return status === '已下发' ? 'dispatch-done' : 'dispatch-pending'; }
+    function auditTagClass(status) {
+      return {
+        '待填报': 'audit-pending',
+        '所长审核': 'audit-zone',
+        '专工审核': 'audit-engineer',
+        '主任审核': 'audit-director',
+        '审核通过': 'audit-approved',
+        '已退回': 'audit-returned'
+      }[status] || 'audit-pending';
+    }
+
+    function nowText() {
+      var d = new Date();
+      function pad(n) { return String(n).padStart(2, '0'); }
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function operationTimestamp(value) {
+      if (!value) return null;
+      var timestamp = new Date(value.replace(' ', 'T')).getTime();
+      return Number.isNaN(timestamp) ? null : timestamp;
+    }
 
     function esc(s) {
       return String(s).replace(/[&<>'"]/g, function(c) {
@@ -402,7 +471,8 @@
       var code = document.getElementById('filterCode').value.trim().toLowerCase();
       var name = document.getElementById('filterName').value.trim().toLowerCase();
       var type = document.getElementById('filterType').value;
-      var status = document.getElementById('filterStatus').value;
+      var dispatchStatus = document.getElementById('filterDispatchStatus').value;
+      var auditStatus = document.getElementById('filterAuditStatus').value;
       var start = document.getElementById('filterStart').value;
       var end = document.getElementById('filterEnd').value;
       var list = tasks.filter(function(t) {
@@ -410,11 +480,24 @@
         if (code && t.code.toLowerCase().indexOf(code) === -1) return false;
         if (name && t.name2.toLowerCase().indexOf(name) === -1) return false;
         if (type && t.type !== type) return false;
-        if (status && t.status !== status) return false;
-        if (start && t.time < start) return false;
-        if (end && t.time > end) return false;
+        if (dispatchStatus && t.dispatchStatus !== dispatchStatus) return false;
+        if (auditStatus && t.auditStatus !== auditStatus) return false;
+        var operationDate = t.lastOperationTime ? t.lastOperationTime.slice(0, 10) : '';
+        if (start && (!operationDate || operationDate < start)) return false;
+        if (end && (!operationDate || operationDate > end)) return false;
         return true;
       });
+      if (timeSortDirection) {
+        list = list.slice().sort(function(a, b) {
+          var aTime = operationTimestamp(a.lastOperationTime);
+          var bTime = operationTimestamp(b.lastOperationTime);
+          if (aTime === null && bTime === null) return a.id - b.id;
+          if (aTime === null) return 1;
+          if (bTime === null) return -1;
+          if (aTime === bTime) return a.id - b.id;
+          return timeSortDirection === 'desc' ? bTime - aTime : aTime - bTime;
+        });
+      }
       return list;
     }
 
@@ -450,11 +533,14 @@
             '<td>' + esc(t.dept) + '</td>' +
             '<td>' + esc(t.zone) + '</td>' +
             '<td>' + workerHtml + '</td>' +
-            '<td><div class="action-row"><a class="action-link set-worker" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link dispatch"' + (t.worker === '待分配' || t.status !== '待分配' ? ' style="display:none"' : '') + ' data-dispatch="' + t.id + '">下发</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
+            '<td><span class="compact-status ' + dispatchTagClass(t.dispatchStatus) + '">' + esc(t.dispatchStatus) + '</span></td>' +
+            '<td><span class="compact-status ' + auditTagClass(t.auditStatus) + '">' + esc(t.auditStatus) + '</span></td>' +
+            '<td>' + (t.lastOperationTime ? esc(t.lastOperationTime) : '—') + '</td>' +
+            '<td><div class="action-row"><a class="action-link set-worker" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link dispatch"' + (t.worker === '待分配' || t.dispatchStatus !== '未下发' ? ' style="display:none"' : '') + ' data-dispatch="' + t.id + '">下发</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
             '</tr>';
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
       }
 
       var box = document.getElementById('pageBox');
@@ -484,11 +570,31 @@
       for (var i = 0; i < inputs.length; i++) inputs[i].value = '';
       var selects = document.querySelectorAll('.filter-grid-4 select');
       for (var j = 0; j < selects.length; j++) selects[j].value = '';
+      timeSortDirection = null;
+      updateTimeSortHeader();
       currentPage = 1;
       render();
     });
     document.querySelectorAll('.filter-grid-4 input').forEach(function(input) {
       input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { currentPage = 1; render(); } });
+    });
+
+    function updateTimeSortHeader() {
+      var button = document.getElementById('timeSortBtn');
+      var icon = document.getElementById('timeSortIcon');
+      button.classList.toggle('active', Boolean(timeSortDirection));
+      icon.textContent = timeSortDirection === 'desc' ? '↓' : timeSortDirection === 'asc' ? '↑' : '⇅';
+      button.setAttribute('aria-label', timeSortDirection === 'desc'
+        ? '最近操作时间，当前降序，点击切换为升序'
+        : timeSortDirection === 'asc'
+          ? '最近操作时间，当前升序，点击恢复默认顺序'
+          : '最近操作时间，点击按降序排序');
+    }
+    document.getElementById('timeSortBtn').addEventListener('click', function() {
+      timeSortDirection = timeSortDirection === null ? 'desc' : timeSortDirection === 'desc' ? 'asc' : null;
+      currentPage = 1;
+      updateTimeSortHeader();
+      render();
     });
 
     // 普查人员数据（按片区所）
@@ -588,6 +694,7 @@
         return;
       }
       currentEditingTask.worker = names.join('、');
+      currentEditingTask.lastOperationTime = nowText();
       closeWorkerModal();
       render();
     });
@@ -618,7 +725,9 @@
         var id = Number(dispatchLink.getAttribute('data-dispatch'));
         var task = tasks.find(function(t) { return t.id === id; });
         if (task && task.worker !== '待分配') {
-          task.status = '进行中';
+          task.dispatchStatus = '已下发';
+          task.auditStatus = '待填报';
+          task.lastOperationTime = nowText();
           render();
         }
         return;

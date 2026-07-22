@@ -37,8 +37,12 @@
     .reason-tab.active { color: var(--primary); font-weight: 600; }
     .reason-tab.active::after { content: ""; position: absolute; left: 20px; right: 20px; bottom: -1px; height: 2px; background: var(--primary); border-radius: 1px; }
 
-    /* 主体两栏 */
-    .detail-body { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+    /* 主体两栏：左侧允许收缩并由表格内部滚动，避免审批记录被挤出视口 */
+    .main { min-width: 0; }
+    .detail-body { display: grid; width: 100%; max-width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); gap: 16px; align-items: start; }
+    .detail-body > div,
+    #approvalPanel { min-width: 0; }
+    .detail-body .table-scroll { width: 100%; max-width: 100%; }
     .card.no-top-radius { border-top-left-radius: 0; border-top-right-radius: 0; }
 
     /* 统计卡 */
@@ -67,9 +71,22 @@
     .bd-change-zero { color: var(--muted); }
     .bd-file-link { color: var(--primary); text-decoration: none; }
     .bd-file-link:hover { text-decoration: underline; }
+    .bd-attachment-name { display: inline-block; max-width: 88px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
     .bd-ops a { color: var(--primary); font-size: 12px; cursor: pointer; }
     .bd-ops a:hover { text-decoration: underline; }
     .bd-ops .sep { color: #d5deed; }
+    .building-table th:last-child,
+    .building-table td:last-child {
+      position: sticky;
+      right: 0;
+      z-index: 3;
+      width: 80px;
+      min-width: 80px;
+      background: #fff;
+      box-shadow: -8px 0 12px rgba(45, 61, 84, 0.08);
+    }
+    .building-table th:last-child { z-index: 4; background: #fafbfc; }
+    .building-table tbody tr:hover td:last-child { background: #f8faff; }
 
     /* 分页 */
     .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; }
@@ -82,7 +99,8 @@
     .page-jump select { padding: 4px 6px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-size: 12px; }
 
     /* 右侧审批记录 */
-    .approval-card { padding: 16px 18px; }
+    #approvalPanel { overflow: hidden; }
+    .approval-card { padding: 16px 18px; overflow: hidden; }
     .approval-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
     .approval-list { position: relative; }
     .approval-item { position: relative; padding: 0 0 18px 24px; }
@@ -92,30 +110,42 @@
     .approval-item.warn::before { background: var(--danger); border-color: var(--danger); }
     .approval-item::after { content: ""; position: absolute; left: 12px; top: 16px; bottom: -6px; width: 2px; background: var(--border); }
     .approval-item:last-child::after { display: none; }
-    .approval-item .ap-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-    .approval-item .ap-title { font-size: 13px; font-weight: 600; color: var(--text); }
-    .approval-item .ap-time { font-size: 12px; color: var(--muted); }
+    .approval-item .ap-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+    .approval-item .ap-title { min-width: 0; font-size: 13px; font-weight: 600; color: var(--text); }
+    .approval-item .ap-time { flex-shrink: 0; font-size: 12px; color: var(--muted); }
     .approval-item .ap-meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
     .approval-item .ap-avatar { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 11px; font-weight: 600; }
-    .approval-item .ap-comment { font-size: 12px; color: var(--text-2); background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 6px 8px; }
+    .approval-item .ap-comment { font-size: 12px; color: var(--text-2); background: #fafbfc; border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 6px 8px; overflow-wrap: anywhere; }
     .approval-item .ap-comment.danger { color: var(--danger); background: #fff2f0; border-color: #ffccc7; }
+
+    @media (max-width: 1180px) {
+      .detail-body { grid-template-columns: 1fr; }
+      #approvalPanel { width: 100%; }
+    }
 
     /* 底部固定操作栏 */
     .footer-bar { position: sticky; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border); padding: 12px 24px; margin-top: 20px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04); z-index: 50; }
 
     /* 审核弹窗 */
     .audit-form { padding: 4px 0; }
-    .audit-row { display: flex; align-items: center; padding: 14px 0; }
-    .audit-label { width: 90px; color: var(--text-2); font-size: 14px; }
+    .audit-row { display: flex; align-items: flex-start; padding: 14px 0; }
+    .audit-label { width: 96px; padding-top: 10px; flex-shrink: 0; color: var(--text-2); font-size: 14px; }
     .audit-label .req { color: var(--danger); margin-right: 4px; }
-    .radio-group { display: flex; align-items: center; gap: 24px; }
+    .audit-control { flex: 1; min-width: 0; }
+    .radio-group { display: flex; align-items: center; gap: 24px; min-height: 40px; }
     .radio-group label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text); cursor: pointer; }
     .radio-group input { accent-color: var(--primary); width: 16px; height: 16px; }
-    .audit-input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; }
+    .audit-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; }
     .audit-input:focus { outline: none; border-color: var(--primary); }
-    .audit-textarea { width: 100%; min-height: 100px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; resize: vertical; font-family: inherit; }
+    .audit-textarea { width: 100%; min-height: 100px; padding: 10px 12px 28px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; resize: vertical; font-family: inherit; }
     .audit-textarea:focus { outline: none; border-color: var(--primary); }
     .audit-textarea::placeholder { color: var(--muted-2); }
+    .audit-field-error { border-color: var(--danger) !important; }
+    .audit-error { display: none; margin-top: 6px; color: var(--danger); font-size: 12px; }
+    .audit-error.visible { display: block; }
+    .audit-textarea-wrap { position: relative; }
+    .audit-count { position: absolute; right: 10px; bottom: 9px; color: var(--muted); font-size: 12px; pointer-events: none; }
+    .status-returned { background: #fff0f0; color: var(--danger); }
 
     /* 楼栋详情弹窗 */
     .bd-detail-card { padding: 24px 28px 0; }
@@ -130,8 +160,16 @@
     .bd-detail-grid .bd-value.up { color: var(--success); font-weight: 600; }
     .bd-detail-grid .bd-value.down { color: var(--danger); font-weight: 600; }
     .change-section-title { font-size: 14px; font-weight: 600; color: var(--text); margin: 20px 0 12px; padding-top: 14px; border-top: 1px dashed var(--border); }
-    .change-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .change-table th, .change-table td { padding: 10px 12px; border: 1px solid var(--border); text-align: left; }
+    #bdDetailModal .modal { width: min(780px, calc(100vw - 48px)) !important; }
+    #bdDetailModal .modal-body { overflow-x: hidden; }
+    .change-table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+    .change-table th, .change-table td { padding: 10px 12px; border: 1px solid var(--border); text-align: left; white-space: normal; overflow-wrap: anywhere; }
+    .change-table th:nth-child(1), .change-table td:nth-child(1) { width: 8%; }
+    .change-table th:nth-child(2), .change-table td:nth-child(2) { width: 18%; }
+    .change-table th:nth-child(3), .change-table td:nth-child(3) { width: 14%; }
+    .change-table th:nth-child(4), .change-table td:nth-child(4) { width: 17%; }
+    .change-table th:nth-child(5), .change-table td:nth-child(5) { width: 24%; }
+    .change-table th:nth-child(6), .change-table td:nth-child(6) { width: 19%; }
     .change-table th { background: #fafbfc; color: var(--text-2); font-weight: 500; }
     .change-table a { color: var(--primary); text-decoration: none; }
     .change-table a:hover { text-decoration: underline; }
@@ -354,22 +392,31 @@
         <div class="audit-form">
           <div class="audit-row">
             <span class="audit-label">审批结果：</span>
-            <div class="radio-group">
-              <label><input type="radio" name="auditResult" value="pass"> 通过</label>
-              <label><input type="radio" name="auditResult" value="reject" checked> 不通过</label>
+            <div class="audit-control">
+              <div class="radio-group">
+                <label><input type="radio" name="auditResult" value="pass"> 通过</label>
+                <label><input type="radio" name="auditResult" value="reject" checked> 不通过</label>
+              </div>
+            </div>
+          </div>
+          <div class="audit-row" id="auditNodeRow">
+            <span class="audit-label"><span class="req">*</span>退回节点：</span>
+            <div class="audit-control">
+              <select class="audit-input" id="auditNode">
+                <option value="普查人员填报">普查人员填报</option>
+              </select>
+              <div class="audit-error" id="auditNodeError">请选择退回节点</div>
             </div>
           </div>
           <div class="audit-row">
-            <span class="audit-label">退回节点：</span>
-            <select class="audit-input" id="auditNode">
-              <option>管理部复核</option>
-              <option>片区初审</option>
-              <option>任务上报</option>
-            </select>
-          </div>
-          <div class="audit-row">
-            <span class="audit-label" style="align-self:flex-start;padding-top:8px;"><span class="req">*</span>审批意见：</span>
-            <textarea class="audit-textarea" id="auditComment" placeholder="多行文本输入，300字" maxlength="300"></textarea>
+            <span class="audit-label"><span class="req" id="auditCommentRequired">*</span>审批意见：</span>
+            <div class="audit-control">
+              <div class="audit-textarea-wrap">
+                <textarea class="audit-textarea" id="auditComment" placeholder="请输入审批意见，最多300字" maxlength="300"></textarea>
+                <span class="audit-count" id="auditCommentCount">0/300</span>
+              </div>
+              <div class="audit-error" id="auditCommentError">不通过时必须填写审批意见</div>
+            </div>
           </div>
         </div>
       </div>
@@ -467,13 +514,39 @@
       '60218B012': { type: '自管站', name: '桥西区东站', code: '60218B012', addr: '石家庄市桥西区中山东路188号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '东里街道办事处', worker: '刘洋', reason: '面积变化', contact: '刘洋', phone: '13600005678', unNet: [1, 1] }
     };
 
+    function resolveDetailContext() {
+      var defaultTaskId = 'OUT-2026-001';
+      var defaultSiteCode = taskSiteMap[defaultTaskId];
+      var inputId = getParam('id');
+      var taskId = taskSiteMap[inputId] ? inputId : '';
+      var siteCode = taskId ? taskSiteMap[taskId] : (siteMock[inputId] ? inputId : '');
+
+      if (siteCode && !taskId) {
+        taskId = Object.keys(taskSiteMap).find(function(id) {
+          return taskSiteMap[id] === siteCode;
+        }) || defaultTaskId;
+      }
+      if (!siteCode) {
+        taskId = defaultTaskId;
+        siteCode = defaultSiteCode;
+      }
+      return {
+        inputId: inputId,
+        taskId: taskId,
+        siteCode: siteCode,
+        site: siteMock[siteCode] || siteMock[defaultSiteCode]
+      };
+    }
+
     function renderSite() {
-      var taskId = getParam('id') || 'OUT-2026-001';
-      var siteCode = taskSiteMap[taskId] || '60218B001';
-      var s = siteMock[siteCode] || siteMock['60218B001'];
+      var context = resolveDetailContext();
+      var s = context.site;
       document.title = s.name + ' - 任务详情 - 面积普查管理系统';
-      document.getElementById('detailTitle').innerHTML = (s.fullName || s.name) + ' <span class="status-chip status-progress" id="statusChip">进行中</span>';
-      document.getElementById('taskSubtitle').textContent = '任务编号 OUT-2026-' + code.substr(-3) + ' · 普查原因：' + s.reason;
+      var detailTitle = document.getElementById('detailTitle');
+      var statusChip = document.getElementById('statusChip');
+      detailTitle.textContent = (s.fullName || s.name) + ' ';
+      detailTitle.appendChild(statusChip);
+      document.getElementById('taskSubtitle').textContent = '任务编号 ' + context.taskId + ' · 普查原因：' + s.reason;
       document.getElementById('siteName').textContent = s.name;
       document.getElementById('siteCode').textContent = s.code;
       document.getElementById('siteAddr').textContent = s.addr;
@@ -560,7 +633,8 @@
           '<td>' + b.radiator + '</td>' +
           '<td>' + b.year + '</td>' +
           '<td>' + b.basis + '</td>' +
-          '<td><a class="bd-file-link" href="#" data-idx="' + i + '">查看</a></td>' +
+          '<td><span class="bd-attachment-name" title="' + b.file + '">' + b.file + '</span></td>' +
+          '<td class="bd-ops"><a class="bd-file-link" href="#" data-idx="' + i + '">查看</a></td>' +
         '</tr>';
       }).join('');
     }
@@ -616,18 +690,135 @@
 
     // 审核弹窗
     var auditModal = document.getElementById('auditModal');
-    document.getElementById('auditBtn').addEventListener('click', function() { auditModal.style.display = 'flex'; });
-    document.getElementById('closeAuditModal').addEventListener('click', function() { auditModal.style.display = 'none'; });
-    document.getElementById('cancelAuditBtn').addEventListener('click', function() { auditModal.style.display = 'none'; });
+    var auditNodeRow = document.getElementById('auditNodeRow');
+    var auditNode = document.getElementById('auditNode');
+    var auditNodeError = document.getElementById('auditNodeError');
+    var auditComment = document.getElementById('auditComment');
+    var auditCommentRequired = document.getElementById('auditCommentRequired');
+    var auditCommentCount = document.getElementById('auditCommentCount');
+    var auditCommentError = document.getElementById('auditCommentError');
+    var confirmAuditBtn = document.getElementById('confirmAuditBtn');
+    var auditSubmitting = false;
+
+    function currentAuditResult() {
+      return document.querySelector('input[name="auditResult"]:checked').value;
+    }
+
+    function setAuditError(control, error, visible) {
+      control.classList.toggle('audit-field-error', visible);
+      error.classList.toggle('visible', visible);
+    }
+
+    function updateAuditFields() {
+      var isReject = currentAuditResult() === 'reject';
+      auditNodeRow.style.display = isReject ? 'flex' : 'none';
+      auditCommentRequired.style.display = isReject ? 'inline' : 'none';
+      if (!isReject) {
+        setAuditError(auditNode, auditNodeError, false);
+        setAuditError(auditComment, auditCommentError, false);
+      }
+    }
+
+    function resetAuditForm() {
+      document.querySelector('input[name="auditResult"][value="reject"]').checked = true;
+      auditNode.value = '普查人员填报';
+      auditComment.value = '';
+      auditCommentCount.textContent = '0/300';
+      setAuditError(auditNode, auditNodeError, false);
+      setAuditError(auditComment, auditCommentError, false);
+      auditSubmitting = false;
+      confirmAuditBtn.disabled = false;
+      updateAuditFields();
+    }
+
+    function closeAuditModal() {
+      auditModal.style.display = 'none';
+      resetAuditForm();
+    }
+
+    function formatAuditTime(date) {
+      function pad(value) { return String(value).padStart(2, '0'); }
+      return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    }
+
+    function createAuditElement(tag, className, text) {
+      var element = document.createElement(tag);
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
+    }
+
+    function prependAuditRecord(result, returnNode, comment) {
+      var item = createAuditElement('div', 'approval-item ' + (result === 'pass' ? 'done' : 'warn'));
+      var header = createAuditElement('div', 'ap-header');
+      header.appendChild(createAuditElement('span', 'ap-title', '片区所审核'));
+      header.appendChild(createAuditElement('span', 'ap-time', formatAuditTime(new Date())));
+      item.appendChild(header);
+
+      var meta = createAuditElement('div', 'ap-meta');
+      meta.appendChild(createAuditElement('span', 'ap-avatar', '李'));
+      meta.appendChild(createAuditElement('span', '', '李明（所长）'));
+      item.appendChild(meta);
+
+      var recordText = result === 'pass'
+        ? (comment || '审核通过，无补充意见')
+        : '已退回至' + returnNode + '。' + comment;
+      item.appendChild(createAuditElement('div', 'ap-comment' + (result === 'reject' ? ' danger' : ''), recordText));
+      document.querySelector('.approval-list').insertBefore(item, document.querySelector('.approval-list').firstChild);
+    }
+
+    function updateStatusAfterAudit(result) {
+      var chip = document.getElementById('statusChip');
+      ['status-progress', 'status-zone-review', 'status-dept-review', 'status-finished', 'status-returned'].forEach(function(className) {
+        chip.classList.remove(className);
+      });
+      if (result === 'pass') {
+        chip.textContent = '专工审核';
+        chip.classList.add('status-dept-review');
+      } else {
+        chip.textContent = '已退回';
+        chip.classList.add('status-returned');
+      }
+    }
+
+    document.querySelectorAll('input[name="auditResult"]').forEach(function(input) {
+      input.addEventListener('change', updateAuditFields);
+    });
+    auditComment.addEventListener('input', function() {
+      auditCommentCount.textContent = auditComment.value.length + '/300';
+      if (auditComment.value.trim()) setAuditError(auditComment, auditCommentError, false);
+    });
+    auditNode.addEventListener('change', function() {
+      if (auditNode.value) setAuditError(auditNode, auditNodeError, false);
+    });
+    document.getElementById('auditBtn').addEventListener('click', function() {
+      resetAuditForm();
+      auditModal.style.display = 'flex';
+    });
+    document.getElementById('closeAuditModal').addEventListener('click', closeAuditModal);
+    document.getElementById('cancelAuditBtn').addEventListener('click', closeAuditModal);
     document.getElementById('confirmAuditBtn').addEventListener('click', function() {
-      var result = document.querySelector('input[name="auditResult"]:checked').value;
-      if (result === 'reject' && !document.getElementById('auditComment').value.trim()) {
-        alert('退回时必须填写审批意见');
+      if (auditSubmitting) return;
+      var result = currentAuditResult();
+      var returnNode = auditNode.value;
+      var comment = auditComment.value.trim();
+      var nodeInvalid = result === 'reject' && !returnNode;
+      var commentInvalid = result === 'reject' && !comment;
+      setAuditError(auditNode, auditNodeError, nodeInvalid);
+      setAuditError(auditComment, auditCommentError, commentInvalid);
+      if (nodeInvalid || commentInvalid) {
+        if (commentInvalid) auditComment.focus();
         return;
       }
+
+      auditSubmitting = true;
+      confirmAuditBtn.disabled = true;
+      updateStatusAfterAudit(result);
+      prependAuditRecord(result, returnNode, comment);
       alert('审核' + (result === 'pass' ? '通过' : '退回') + '已提交。');
-      auditModal.style.display = 'none';
+      closeAuditModal();
     });
+    resetAuditForm();
 
     // 变更详情演示数据
     var changeMock = [

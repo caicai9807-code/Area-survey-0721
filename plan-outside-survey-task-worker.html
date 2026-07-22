@@ -200,8 +200,6 @@
                   <th>站点类型</th>
                   <th>普查原因</th>
                   <th>管理部</th>
-                  <th>任务状态</th>
-                  <th>下发状态</th>
                   <th>审核状态</th>
                   <th>最近操作时间</th>
                   <th>操作</th>
@@ -231,14 +229,14 @@
     });
 
     var tasks = [
-      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', distribute: '已下发', audit: '未审核', lastOp: '2026-07-16 09:30', assignee: '李明', time: '2026-07-16' },
-      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', distribute: '已下发', audit: '片区审核通过', lastOp: '2026-07-18 14:20', assignee: '李明', time: '2026-07-18' },
-      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', distribute: '已下发', audit: '退回修改中', lastOp: '2026-07-15 11:00', assignee: '李明', time: '2026-07-14' },
-      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', distribute: '已下发', audit: '片区审核中', lastOp: '2026-07-10 16:30', assignee: '李明', time: '2026-07-10' },
-      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', distribute: '已下发', audit: '退回修改中', lastOp: '2026-07-09 10:45', assignee: '李明', time: '2026-07-09' },
-      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', distribute: '已下发', audit: '管理部审核通过', lastOp: '2026-07-05 17:00', assignee: '李明', time: '2026-07-05' },
-      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', distribute: '已下发', audit: '未审核', lastOp: '2026-07-20 08:30', assignee: '李明', time: '2026-07-20' },
-      { id: 108, name: '计划外裕华区趸售用户一号站', code: '60218B013', name2: '趸售用户一号站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', distribute: '已下发', audit: '未审核', lastOp: '2026-07-22 10:15', assignee: '李明', time: '2026-07-22' }
+      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', audit: '未审核', lastOp: '2026-07-16 09:30', assignee: '李明', time: '2026-07-16' },
+      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', audit: '片区审核通过', lastOp: '2026-07-18 14:20', assignee: '李明', time: '2026-07-18' },
+      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', audit: '退回修改中', lastOp: '2026-07-15 11:00', assignee: '李明', time: '2026-07-14' },
+      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', audit: '片区审核中', lastOp: '2026-07-10 16:30', assignee: '李明', time: '2026-07-10' },
+      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', audit: '退回修改中', lastOp: '2026-07-09 10:45', assignee: '李明', time: '2026-07-09' },
+      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', audit: '管理部审核通过', lastOp: '2026-07-05 17:00', assignee: '李明', time: '2026-07-05' },
+      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', audit: '未审核', lastOp: '2026-07-20 08:30', assignee: '李明', time: '2026-07-20' },
+      { id: 108, name: '计划外裕华区趸售用户一号站', code: '60218B013', name2: '趸售用户一号站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', audit: '未审核', lastOp: '2026-07-22 10:15', assignee: '李明', time: '2026-07-22' }
     ];
     var pageSize = 10;
     var currentPage = 1;
@@ -246,12 +244,6 @@
 
     function esc(s) { return String(s).replace(/[&<>'"]/g, function(c) { return { '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c]; }); }
     function typeTag(t) { return '<span class="tag ' + (t === '用户站' ? 'tag-user-station' : 'tag-self-station') + '">' + t + '</span>'; }
-    function statusTag(s) {
-      var map = { '进行中':'status-progress','进行中（已撤回）':'status-withdrawn','站长审核':'status-zone-review','所长审核':'status-zone-review','管理部审核':'status-dept-review','已退回':'status-rejected','已完成':'status-finished' };
-      var cls = map[s] || 'status-draft';
-      return '<span class="status-tag ' + cls + '">' + s + '</span>';
-    }
-
     function doFilter() {
       var code = document.getElementById('filterCode').value.trim().toLowerCase();
       var name = document.getElementById('filterName').value.trim().toLowerCase();
@@ -313,15 +305,13 @@
             '<td>' + typeTag(t.type) + '</td>' +
             '<td>' + esc(t.reason) + '</td>' +
             '<td>' + esc(t.dept) + '</td>' +
-            '<td>' + statusTag(t.status) + '</td>' +
-            '<td>' + esc(t.distribute || '-') + '</td>' +
             '<td>' + esc(t.audit || '-') + '</td>' +
             '<td>' + esc(t.lastOp || '-') + '</td>' +
             '<td><div class="action-row">' + renderOps(t) + '</div></td>' +
             '</tr>';
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
       }
 
       var box = document.getElementById('pageBox');
