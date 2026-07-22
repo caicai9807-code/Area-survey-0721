@@ -226,6 +226,12 @@
           <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html">
             <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 我的计划外普查任务
           </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-site-details.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查站点明细
+          </a>
+          <a class="menu-item area-survey-entry" href="area-survey-placeholder.html">
+            <span class="menu-icon">&#x25A3;</span> 面积普查
+          </a>
         </div>
       </aside>
       <main class="main">
@@ -235,7 +241,7 @@
           <span>任务详情</span>
         </nav>
 
-        <a class="back-link" href="plan-outside-survey-task-list.html">&#x2190; 返回任务列表</a>
+        <a class="back-link" id="topBackLink" href="plan-outside-survey-task-list.html">&#x2190; 返回任务列表</a>
 
         <div class="detail-header">
           <div>
@@ -535,14 +541,26 @@
       'OUT-2026-003': '60218B002',
       'OUT-2026-004': '60218B009',
       'OUT-2026-005': '60218B012',
-      'OUT-2026-006': '60218B010'
+      'OUT-2026-006': '60218B010',
+      'OUT-2026-011': '60218B001',
+      'OUT-2026-012': '60218B004',
+      'OUT-2026-013': '60218B002',
+      'OUT-2026-014': '60218B009',
+      'OUT-2026-015': '60218B012',
+      'OUT-2026-016': '60218B010',
+      'OUT-2026-017': '60218B013',
+      'OUT-2025-028': '60218B020'
     };
 
     var siteMock = {
-      '60218B001': { type: '自管站', name: '春江花月西站', code: '60218B001', addr: '石家庄市桥西区新石中路166号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '新石街道办事处', worker: '张三、李晨晨', reason: '面积变化', contact: '王建国', phone: '0311-87654321', unNet: [2, 3] },
-      '60218B002': { type: '用户站', name: '长安区东站', code: '60218B002', fullName: '石家庄市长安区中山东路88号业主委员会', short: '长安业委会', addr: '石家庄市长安区中山东路88号', dept: '长安管理部', zone: '长安管理部', district: '长安区', office: '建北街道办事处', worker: '王倩', reason: '一管到户', contact: '丁经理', phone: '13800138001', unNet: [1, 0] },
-      '60218B004': { type: '用户站', name: '裕华区万达站', code: '60218B004', fullName: '石家庄市裕华区万达商业广场', short: '万达广场', addr: '石家庄市裕华区槐安东路120号', dept: '裕华管理部', zone: '裕华管理部', district: '裕华区', office: '槐底街道办事处', worker: '李明', reason: '面积变化', contact: '李主任', phone: '13512345678', unNet: [0, 2] },
-      '60218B012': { type: '自管站', name: '桥西区东站', code: '60218B012', addr: '石家庄市桥西区中山东路188号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '东里街道办事处', worker: '刘洋', reason: '面积变化', contact: '刘洋', phone: '13600005678', unNet: [1, 1] }
+      '60218B001': { type: '自管站', name: '春江花月西站', code: '60218B001', addr: '石家庄市桥西区新石中路166号', dept: '桥西管理部', zone: '桥西片区所', district: '桥西区', office: '新石街道办事处', worker: '张三、李晨晨', reason: '面积变化', contact: '王建国', phone: '0311-87654321', unNet: [2, 3] },
+      '60218B002': { type: '用户站', name: '长安区东站', code: '60218B002', fullName: '石家庄市长安区中山东路88号业主委员会', short: '长安业委会', addr: '石家庄市长安区中山东路88号', dept: '长安管理部', zone: '长安片区所', district: '长安区', office: '建北街道办事处', worker: '王倩', reason: '一管到户', contact: '丁经理', phone: '13800138001', unNet: [1, 0] },
+      '60218B004': { type: '用户站', name: '裕华区万达站', code: '60218B004', fullName: '石家庄市裕华区万达商业广场', short: '万达广场', addr: '石家庄市裕华区槐安东路120号', dept: '裕华管理部', zone: '裕华片区所', district: '裕华区', office: '槐底街道办事处', worker: '李明', reason: '面积变化', contact: '李主任', phone: '13512345678', unNet: [0, 2] },
+      '60218B009': { type: '自管站', name: '桥西区友谊站', code: '60218B009', addr: '石家庄市桥西区友谊南大街35号', dept: '桥西管理部', zone: '桥西片区所', district: '桥西区', office: '友谊街道办事处', worker: '待分配', reason: '新开户及增容', contact: '赵主任', phone: '0311-87650009', unNet: [0, 0] },
+      '60218B010': { type: '自管站', name: '裕华区北站', code: '60218B010', addr: '石家庄市裕华区仓丰路18号', dept: '裕华管理部', zone: '裕华片区所', district: '裕华区', office: '建通街道办事处', worker: '陈敏', reason: '一管到户', contact: '孙经理', phone: '0311-87650010', unNet: [1, 0] },
+      '60218B012': { type: '自管站', name: '桥西区东站', code: '60218B012', addr: '石家庄市桥西区中山东路188号', dept: '桥西管理部', zone: '桥西片区所', district: '桥西区', office: '东里街道办事处', worker: '刘洋', reason: '面积变化', contact: '刘洋', phone: '13600005678', unNet: [1, 1] },
+      '60218B013': { type: '用户站', name: '长安区和平站', code: '60218B013', fullName: '石家庄市长安区和平东路52号用户站', short: '和平站', addr: '石家庄市长安区和平东路52号', dept: '长安管理部', zone: '长安片区所', district: '长安区', office: '广安街道办事处', worker: '赵敏', reason: '趸售用户', contact: '马经理', phone: '13800138013', unNet: [0, 1] },
+      '60218B020': { type: '自管站', name: '裕华区南站', code: '60218B020', addr: '石家庄市裕华区塔南路66号', dept: '裕华管理部', zone: '裕华片区所', district: '裕华区', office: '裕兴街道办事处', worker: '周平', reason: '面积变化', contact: '周主任', phone: '0311-87650020', unNet: [2, 0] }
     };
     var currentSiteType = '自管站';
 
@@ -550,8 +568,10 @@
       var defaultTaskId = 'OUT-2026-001';
       var defaultSiteCode = taskSiteMap[defaultTaskId];
       var inputId = getParam('id');
-      var taskId = taskSiteMap[inputId] ? inputId : '';
-      var siteCode = taskId ? taskSiteMap[taskId] : (siteMock[inputId] ? inputId : '');
+      var explicitTaskId = getParam('taskId');
+      var explicitSiteCode = getParam('siteCode');
+      var taskId = taskSiteMap[explicitTaskId] ? explicitTaskId : (taskSiteMap[inputId] ? inputId : '');
+      var siteCode = siteMock[explicitSiteCode] ? explicitSiteCode : (taskId ? taskSiteMap[taskId] : (siteMock[inputId] ? inputId : ''));
 
       if (siteCode && !taskId) {
         taskId = Object.keys(taskSiteMap).find(function(id) {
@@ -577,6 +597,11 @@
       document.title = s.name + ' - 任务详情 - 面积普查管理系统';
       var detailTitle = document.getElementById('detailTitle');
       var statusChip = document.getElementById('statusChip');
+      var sourceAuditStatus = getParam('source') === 'site-details' ? getParam('auditStatus') : '';
+      if (sourceAuditStatus) {
+        statusChip.textContent = sourceAuditStatus;
+        statusChip.className = 'status-chip ' + (sourceAuditStatus === '审核通过' ? 'status-finished' : (sourceAuditStatus === '已退回' ? 'status-returned' : 'status-dept-review'));
+      }
       detailTitle.textContent = (s.fullName || s.name) + ' ';
       detailTitle.appendChild(statusChip);
       document.getElementById('taskSubtitle').textContent = '任务编号 ' + context.taskId + ' · 普查原因：' + s.reason;
@@ -626,6 +651,17 @@
           '</div>';
     }
     renderSite();
+
+    function configureReturnRoute() {
+      if (getParam('source') !== 'site-details') return;
+      var returnQuery = getParam('returnQuery');
+      var returnUrl = 'plan-outside-survey-site-details.html' + (returnQuery ? '?' + returnQuery : '');
+      var topBackLink = document.getElementById('topBackLink');
+      topBackLink.href = returnUrl;
+      topBackLink.innerHTML = '&#x2190; 返回站点明细';
+      document.getElementById('backBtn').onclick = function() { location.href = returnUrl; };
+    }
+    configureReturnRoute();
 
     // 楼栋列表
     var buildings = [
@@ -748,7 +784,9 @@
       });
     });
 
-    document.getElementById('backBtn').addEventListener('click', function() { history.back(); });
+    document.getElementById('backBtn').addEventListener('click', function() {
+      if (getParam('source') !== 'site-details') history.back();
+    });
 
     // 审核弹窗
     var auditModal = document.getElementById('auditModal');

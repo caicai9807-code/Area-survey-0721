@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>计划外普查站点明细 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .site-detail-layout{grid-template-columns:var(--sidebar-width) 280px minmax(0,1fr)}
+    .org-rail{min-width:0;padding:20px 12px;background:#f5f7fb;border-right:1px solid var(--border)}
+    .org-card{position:sticky;top:calc(var(--nav-height) + 20px);min-height:calc(100vh - var(--nav-height) - 40px);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow);overflow:hidden}
+    .org-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #edf1f7}
+    .org-title{font-size:16px;font-weight:700;color:var(--text)}
+    .org-reset{border:0;background:transparent;color:var(--primary);padding:0;cursor:pointer;font-size:13px}
+    .org-content{padding:16px 14px}
+    .org-search-wrap{position:relative;margin-bottom:14px}
+    .org-search{width:100%;height:36px;padding:0 34px 0 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);font:inherit;outline:none}
+    .org-search:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(78,112,235,.12)}
+    .org-search::placeholder{color:var(--muted-2)}
+    .org-search-icon{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+    .org-tree{display:flex;flex-direction:column;gap:4px}
+    .org-dept-group{min-width:0}
+    .org-row{display:flex;align-items:center;min-width:0;border-radius:6px;color:#53627b}
+    .org-row:hover{background:#f6f8ff}
+    .org-row.selected{background:var(--primary-soft);color:var(--primary)}
+    .org-expand{flex:0 0 28px;width:28px;height:36px;border:0;background:transparent;color:#8a96aa;cursor:pointer;padding:0;transition:transform .15s}
+    .org-expand.collapsed{transform:rotate(-90deg)}
+    .org-node{display:flex;align-items:center;gap:8px;min-width:0;flex:1;height:36px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;padding:0 8px 0 0;font-size:14px}
+    .org-node.dept{font-weight:600}
+    .org-node.zone{height:34px;padding-left:42px}
+    .org-node-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .org-node-icon{flex:0 0 auto;color:#8a96aa;font-size:12px}
+    .org-children{display:flex;flex-direction:column;gap:2px}
+    .org-empty{padding:32px 8px;text-align:center;color:var(--muted);font-size:13px}
+    .page-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .page-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px}.page-subtitle{color:var(--muted);font-size:13px}
+    .role-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:600}
+    .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 20px;align-items:end}
+    .filter-grid .field{display:flex;align-items:center;gap:8px;min-width:0;position:relative}
+    .filter-grid .field>label{margin-bottom:0;flex-shrink:0;color:#7e8aa0;font-size:13px;white-space:nowrap}
+    .filter-grid .field>.control,.filter-grid .field>.range{flex:1;min-width:0;width:auto}
+    .range{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);align-items:center;gap:8px}.range-sep{text-align:center;color:var(--muted)}
+    .filter-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:36px;grid-column:4}
+    .field-error{display:none;position:absolute;left:0;top:calc(100% + 4px);color:var(--danger);font-size:12px;white-space:nowrap}.field-error.visible{display:block}
+    .table-scroll{overflow-x:auto}.detail-table{min-width:3390px}.detail-table th,.detail-table td{white-space:nowrap}
+    .detail-table td.address-cell{max-width:230px;overflow:hidden;text-overflow:ellipsis}
+    .detail-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+    .sticky-operation{position:sticky;right:0;background:#fff;box-shadow:-6px 0 10px rgba(31,45,61,.05);z-index:2}
+    thead .sticky-operation{background:#fafbfc;z-index:3}
+    .status-tag{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:2px 8px;border-radius:999px;font-size:12px;line-height:20px}
+    .status-muted{background:#f3f4f6;color:#6b7280}.status-progress{background:#e6f4ff;color:#1677ff}.status-success{background:#f0fff4;color:#389e0d}
+    .status-review{background:#fff7e6;color:#d46b08}.status-returned{background:#fff2f0;color:#cf1322}
+    .change-up{color:#cf1322}.change-down{color:#1677ff}.change-zero{color:var(--text-2)}.empty-value{color:var(--muted)}
+    .op-group{display:flex;align-items:center;gap:10px}.link-btn{border:0;background:transparent;color:var(--primary);cursor:pointer;padding:0;font-size:13px}.link-btn.danger{color:var(--danger)}
+    .link-btn:disabled{color:var(--muted-2);cursor:not-allowed}
+    .empty-row td{text-align:center!important;padding:54px 16px!important;color:var(--muted)}
+    .modal-note{padding:12px 14px;border-radius:6px;background:var(--primary-soft);color:var(--text-2);line-height:1.7}
+    .modal-site{font-weight:700;color:var(--text)}.textarea-wrap{position:relative}.textarea-wrap textarea{min-height:110px;resize:vertical;padding-bottom:28px}.char-count{position:absolute;right:10px;bottom:8px;color:var(--muted);font-size:12px}
+    .modal-error{display:none;color:var(--danger);font-size:12px;margin-top:6px}.modal-error.visible{display:block}.control.invalid{border-color:var(--danger)}
+    .toast{position:fixed;left:50%;top:76px;transform:translate(-50%,-12px);padding:10px 16px;border-radius:6px;background:rgba(31,45,61,.94);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:.2s;z-index:1200}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1280px){.site-detail-layout{grid-template-columns:200px 230px minmax(0,1fr)}.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-grid .field[style*="grid-column"]{grid-column:span 2!important}.filter-actions{grid-column:2}}
+    @media(max-width:900px){.site-detail-layout{grid-template-columns:200px minmax(0,1fr)}.org-rail{grid-column:2;padding:16px 16px 0;border-right:0}.org-card{position:static;min-height:0}.main{grid-column:2}.filter-actions{grid-column:2}}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand"><div class="brand-badge">▦</div><span>面积普查管理系统</span></div>
+      <div class="top-actions"><div class="top-dropdown"><span class="top-label">演示身份:</span> 计划经营部 <span style="font-size:10px">▼</span></div><div class="avatar">陈</div><span>陈敏</span></div>
+    </header>
+    <div class="body site-detail-layout">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false"><span class="menu-icon">▣</span>计划外面积普查<span class="menu-arrow" id="menuArrow">▲</span></a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查任务管理</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-items.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查任务</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html"><span class="menu-icon" style="visibility:hidden">▣</span>我的计划外普查任务</a>
+          <a class="menu-item menu-child active" href="plan-outside-survey-site-details.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查站点明细</a>
+          <a class="menu-item area-survey-entry" href="area-survey-placeholder.html"><span class="menu-icon">▣</span>面积普查</a>
+        </div>
+      </aside>
+      <aside class="org-rail" aria-label="组织机构筛选">
+        <section class="org-card">
+          <div class="org-header"><div class="org-title">组织机构</div><button class="org-reset" id="orgReset" type="button">重置</button></div>
+          <div class="org-content">
+            <div class="org-search-wrap"><input class="org-search" id="orgSearch" placeholder="搜索管理部或片区所" aria-label="搜索管理部或片区所"><span class="org-search-icon">⌕</span></div>
+            <div class="org-tree" id="orgTree"></div>
+          </div>
+        </section>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb"><a href="#">面积普查</a><span>/</span><span>计划外普查站点明细</span></nav>
+        <div class="page-header-row">
+          <div><div class="page-title">计划外普查站点明细</div><p class="page-subtitle">汇总全部计划外普查任务中的站点，每个站点仅展示最新任务及最新普查结果</p></div>
+          <span class="role-badge">计划经营部专用</span>
+        </div>
+
+        <section class="card">
+          <div class="card-header"><div class="card-title">筛选条件</div></div>
+          <div class="card-body">
+            <div class="filter-grid">
+              <div class="field"><label><span style="color:var(--danger)">*</span> 普查年度</label><select class="control" id="filterYear"><option value="2026">2026年</option><option value="2025">2025年</option></select></div>
+              <div class="field"><label>换热站编码</label><input class="control" id="filterCode" placeholder="请输入换热站编码"></div>
+              <div class="field"><label>换热站名称</label><input class="control" id="filterName" placeholder="请输入换热站名称"></div>
+              <div class="field"><label>普查状态</label><select class="control" id="filterSurveyStatus"><option value="">全部</option><option>未开始</option><option>进行中</option><option>已完成</option></select></div>
+              <div class="field"><label>普查原因</label><select class="control" id="filterReason"><option value="">全部</option><option>面积变化</option><option>一管到户</option><option>新开户及增容</option><option>趸售用户</option></select></div>
+              <div class="field"><label>站点类型</label><select class="control" id="filterType"><option value="">全部</option><option>自管站</option><option>用户站</option></select></div>
+              <div class="field"><label>是否有面积变化</label><select class="control" id="filterAreaChange"><option value="">全部</option><option>是</option><option>否</option></select></div>
+              <div class="field"><label>下发状态</label><select class="control" id="filterDispatchStatus"><option value="">全部</option><option>未下发</option><option>已下发</option></select></div>
+              <div class="field"><label>审核状态</label><select class="control" id="filterAuditStatus"><option value="">全部</option><option>待填报</option><option>所长审核</option><option>专工审核</option><option>主任审核</option><option>审核通过</option><option>已退回</option></select></div>
+              <div class="field"><label>建筑年代</label><div class="range"><input class="control" id="filterYearStart" type="number" min="1800" max="2100" placeholder="开始年"><span class="range-sep">—</span><input class="control" id="filterYearEnd" type="number" min="1800" max="2100" placeholder="结束年"></div><div class="field-error" id="buildingYearError">开始年不能大于结束年</div></div>
+              <div class="field" style="grid-column:span 2"><label>普查完成时间</label><div class="range"><input class="control" id="filterCompletedStart" type="date"><span class="range-sep">—</span><input class="control" id="filterCompletedEnd" type="date"></div><div class="field-error" id="completedTimeError">开始日期不能晚于结束日期</div></div>
+              <div class="filter-actions"><button class="btn primary" id="searchBtn">查询</button><button class="btn" id="resetBtn">重置</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><div class="card-title">站点明细</div><div style="color:var(--muted);font-size:12px">去重口径：按站点取最新任务完整快照</div></div>
+          <div class="table-scroll">
+            <table class="detail-table">
+              <thead><tr>
+                <th>序号</th><th>换热站编码</th><th>换热站名称</th><th>普查状态</th><th>普查原因</th><th>下发状态</th><th>审核状态</th><th>管理部</th><th>片区所</th><th>站点类型</th><th>办事处</th><th>用热地址</th><th>建筑年代</th><th>原面积（m²）</th><th>现面积（m²）</th><th>面积变化率</th><th>是否有面积变化</th><th>居民面积变化（m²）</th><th>非居民面积变化（m²）</th><th>普查人员</th><th>普查完成时间</th><th class="sticky-operation">操作</th>
+              </tr></thead>
+              <tbody id="siteBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><div class="page-left"><span id="totalText">共 0 个站点</span><span>10条/页</span></div><div class="page-box" id="pageBox"></div></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="actionModal" style="display:none">
+    <div class="modal modal-md">
+      <div class="modal-header"><div class="modal-title" id="modalTitle">同步普查结果</div><button class="modal-close" id="modalClose">×</button></div>
+      <div class="modal-body">
+        <div class="modal-note" id="syncContent">确认将 <span class="modal-site" id="syncSiteName"></span> 的最新普查结果同步到正式站点数据？同步成功后该结果不可直接退回。</div>
+        <div id="returnContent" style="display:none">
+          <div class="modal-note">将 <span class="modal-site" id="returnSiteName"></span> 退回至“普查人员填报”。原审批与完成记录将作为历史保留。</div>
+          <div class="field" style="margin-top:16px"><label><span style="color:var(--danger)">*</span> 退回原因</label><div class="textarea-wrap"><textarea class="control" id="returnReason" maxlength="300" placeholder="请输入退回原因，最多300字"></textarea><span class="char-count" id="reasonCount">0/300</span></div><div class="modal-error" id="reasonError">请输入退回原因</div></div>
+        </div>
+      </div>
+      <div class="modal-footer"><div></div><div class="modal-footer-actions"><button class="btn" id="modalCancel">取消</button><button class="btn primary" id="modalConfirm">确定</button></div></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var sourceRows = [
+      {siteKey:'60218B001',siteCode:'60218B001',siteName:'春江花月西站',latestTaskId:'OUT-2026-001',taskCreatedAt:'2026-07-05 09:00',surveyYear:2026,surveyStatus:'已完成',reason:'新开户及增容',dispatchStatus:'已下发',auditStatus:'所长审核',dept:'桥西管理部',zone:'桥西片区所',siteType:'自管站',office:'新石街道办事处',address:'石家庄市桥西区新石中路166号',buildingYear:2008,originalArea:116800.000,currentArea:116800.000,residentialDelta:0,nonResidentialDelta:0,surveyor:'张三',completedAt:'2026-07-08 15:20',syncStatus:'未同步'},
+      {siteKey:'60218B001',siteCode:'60218B001',siteName:'春江花月西站',latestTaskId:'OUT-2026-011',taskCreatedAt:'2026-07-20 09:30',surveyYear:2026,surveyStatus:'已完成',reason:'面积变化',dispatchStatus:'已下发',auditStatus:'审核通过',dept:'桥西管理部',zone:'桥西片区所',siteType:'自管站',office:'新石街道办事处',address:'石家庄市桥西区新石中路166号',buildingYear:2008,originalArea:116800.000,currentArea:118260.500,residentialDelta:1200.500,nonResidentialDelta:260.000,surveyor:'张三、李晨晨',completedAt:'2026-07-21 16:20',syncStatus:'未同步'},
+      {siteKey:'60218B004',siteCode:'60218B004',siteName:'裕华区万达站',latestTaskId:'OUT-2026-012',taskCreatedAt:'2026-07-18 10:10',surveyYear:2026,surveyStatus:'已完成',reason:'面积变化',dispatchStatus:'已下发',auditStatus:'主任审核',dept:'裕华管理部',zone:'裕华片区所',siteType:'用户站',office:'槐底街道办事处',address:'石家庄市裕华区槐安东路120号',buildingYear:2011,originalArea:86540.000,currentArea:86540.000,residentialDelta:0,nonResidentialDelta:0,surveyor:'李明',completedAt:'2026-07-20 11:45',syncStatus:'未同步'},
+      {siteKey:'60218B002',siteCode:'60218B002',siteName:'长安区东站',latestTaskId:'OUT-2026-013',taskCreatedAt:'2026-07-17 14:00',surveyYear:2026,surveyStatus:'进行中',reason:'一管到户',dispatchStatus:'已下发',auditStatus:'已退回',dept:'长安管理部',zone:'长安片区所',siteType:'用户站',office:'建北街道办事处',address:'石家庄市长安区中山东路88号',buildingYear:2005,originalArea:null,currentArea:null,residentialDelta:null,nonResidentialDelta:null,surveyor:'王倩',completedAt:'',syncStatus:'未同步'},
+      {siteKey:'60218B009',siteCode:'60218B009',siteName:'桥西区友谊站',latestTaskId:'OUT-2026-014',taskCreatedAt:'2026-07-16 08:50',surveyYear:2026,surveyStatus:'未开始',reason:'新开户及增容',dispatchStatus:'未下发',auditStatus:'待填报',dept:'桥西管理部',zone:'桥西片区所',siteType:'自管站',office:'友谊街道办事处',address:'石家庄市桥西区友谊南大街35号',buildingYear:1998,originalArea:null,currentArea:null,residentialDelta:null,nonResidentialDelta:null,surveyor:'待分配',completedAt:'',syncStatus:'未同步'},
+      {siteKey:'60218B012',siteCode:'60218B012',siteName:'桥西区东站',latestTaskId:'OUT-2026-015',taskCreatedAt:'2026-07-15 13:20',surveyYear:2026,surveyStatus:'已完成',reason:'面积变化',dispatchStatus:'已下发',auditStatus:'专工审核',dept:'桥西管理部',zone:'桥西片区所',siteType:'自管站',office:'东里街道办事处',address:'石家庄市桥西区中山东路188号',buildingYear:2002,originalArea:70200.000,currentArea:69100.250,residentialDelta:-900.000,nonResidentialDelta:-199.750,surveyor:'刘洋',completedAt:'2026-07-18 09:10',syncStatus:'未同步'},
+      {siteKey:'60218B010',siteCode:'60218B010',siteName:'裕华区北站',latestTaskId:'OUT-2026-016',taskCreatedAt:'2026-07-14 16:40',surveyYear:2026,surveyStatus:'进行中',reason:'一管到户',dispatchStatus:'已下发',auditStatus:'待填报',dept:'裕华管理部',zone:'裕华片区所',siteType:'自管站',office:'建通街道办事处',address:'石家庄市裕华区仓丰路18号',buildingYear:2015,originalArea:null,currentArea:null,residentialDelta:null,nonResidentialDelta:null,surveyor:'陈敏',completedAt:'',syncStatus:'未同步'},
+      {siteKey:'60218B013',siteCode:'60218B013',siteName:'长安区和平站',latestTaskId:'OUT-2026-017',taskCreatedAt:'2026-07-13 10:25',surveyYear:2026,surveyStatus:'已完成',reason:'趸售用户',dispatchStatus:'已下发',auditStatus:'审核通过',dept:'长安管理部',zone:'长安片区所',siteType:'用户站',office:'广安街道办事处',address:'石家庄市长安区和平东路52号',buildingYear:2018,originalArea:43800.000,currentArea:45130.375,residentialDelta:0,nonResidentialDelta:1330.375,surveyor:'赵敏',completedAt:'2026-07-19 17:05',syncStatus:'已同步'},
+      {siteKey:'60218B020',siteCode:'60218B020',siteName:'裕华区南站',latestTaskId:'OUT-2025-028',taskCreatedAt:'2025-12-20 09:00',surveyYear:2025,surveyStatus:'已完成',reason:'面积变化',dispatchStatus:'已下发',auditStatus:'审核通过',dept:'裕华管理部',zone:'裕华片区所',siteType:'自管站',office:'裕兴街道办事处',address:'石家庄市裕华区塔南路66号',buildingYear:2000,originalArea:95500.000,currentArea:95500.000,residentialDelta:0,nonResidentialDelta:0,surveyor:'周平',completedAt:'2025-12-28 14:30',syncStatus:'已同步'}
+    ];
+    var orgData = [
+      {dept:'桥西管理部',zones:['桥西片区所','振头片区所','红旗片区所']},
+      {dept:'长安管理部',zones:['长安片区所','谈固片区所']},
+      {dept:'裕华管理部',zones:['裕华片区所','槐底片区所']}
+    ];
+    var orgState={keyword:'',selectedType:'',selectedValue:'',expandedDepts:new Set(orgData.map(function(item){return item.dept}))};
+    var pageSize=10,currentPage=1,currentRows=[],activeRow=null,activeAction='';
+    function byId(id){return document.getElementById(id)}
+    function escapeHtml(value){return String(value==null?'':value).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]})}
+    function round3(value){return Math.round(Number(value)*1000)/1000}
+    function isNumericValue(value){return value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))}
+    function hasValidResult(row){return row.surveyStatus==='已完成'&&isNumericValue(row.originalArea)&&isNumericValue(row.currentArea)}
+    function areaDelta(row){return hasValidResult(row)?round3(round3(row.currentArea)-round3(row.originalArea)):null}
+    function areaChange(row){var d=areaDelta(row);return d===null?'—':(d===0?'否':'是')}
+    function areaRate(row){var d=areaDelta(row);if(d===null||Number(row.originalArea)===0)return '—';return (d/Number(row.originalArea)*100).toFixed(2)+'%'}
+    function numberText(value){return isNumericValue(value)?Number(value).toLocaleString('zh-CN',{minimumFractionDigits:3,maximumFractionDigits:3}):'—'}
+    function deltaText(value){if(!isNumericValue(value))return '—';var n=Number(value);return (n>0?'+':'')+numberText(n)}
+    function getLatestRows(){var map=new Map();sourceRows.slice().sort(function(a,b){var t=b.taskCreatedAt.localeCompare(a.taskCreatedAt);return t||b.latestTaskId.localeCompare(a.latestTaskId)}).forEach(function(row){if(!map.has(row.siteKey))map.set(row.siteKey,row)});return Array.from(map.values())}
+    function statusTag(value,type){var cls='status-muted';if(value==='进行中'||value==='已下发')cls='status-progress';if(value==='已完成'||value==='审核通过')cls='status-success';if(value==='所长审核'||value==='专工审核'||value==='主任审核')cls='status-review';if(value==='已退回')cls='status-returned';return '<span class="status-tag '+cls+'">'+escapeHtml(value)+'</span>'}
+    function renderOrgTree(){var keyword=orgState.keyword.trim();var visible=orgData.map(function(group){if(!keyword)return {dept:group.dept,zones:group.zones};if(group.dept.indexOf(keyword)>=0)return {dept:group.dept,zones:group.zones};var zones=group.zones.filter(function(zone){return zone.indexOf(keyword)>=0});return zones.length?{dept:group.dept,zones:zones}:null}).filter(Boolean);if(keyword)visible.forEach(function(group){orgState.expandedDepts.add(group.dept)});byId('orgTree').innerHTML=visible.length?visible.map(function(group){var expanded=orgState.expandedDepts.has(group.dept);var deptSelected=orgState.selectedType==='dept'&&orgState.selectedValue===group.dept;var children=expanded?'<div class="org-children">'+group.zones.map(function(zone){var selected=orgState.selectedType==='zone'&&orgState.selectedValue===zone;return '<div class="org-row '+(selected?'selected':'')+'"><button class="org-node zone" type="button" data-org-action="select-zone" data-org-value="'+escapeHtml(zone)+'" title="'+escapeHtml(zone)+'"><span class="org-node-icon">⌁</span><span class="org-node-label">'+escapeHtml(zone)+'</span></button></div>'}).join('')+'</div>':'';return '<div class="org-dept-group"><div class="org-row '+(deptSelected?'selected':'')+'"><button class="org-expand '+(expanded?'':'collapsed')+'" type="button" data-org-action="toggle" data-org-value="'+escapeHtml(group.dept)+'" aria-label="'+(expanded?'收起':'展开')+escapeHtml(group.dept)+'">⌄</button><button class="org-node dept" type="button" data-org-action="select-dept" data-org-value="'+escapeHtml(group.dept)+'" title="'+escapeHtml(group.dept)+'"><span class="org-node-icon">▣</span><span class="org-node-label">'+escapeHtml(group.dept)+'</span></button></div>'+children+'</div>'}).join(''):'<div class="org-empty">暂无匹配组织</div>'}
+    function readFilters(){return {year:byId('filterYear').value,code:byId('filterCode').value.trim().toUpperCase(),name:byId('filterName').value.trim(),surveyStatus:byId('filterSurveyStatus').value,reason:byId('filterReason').value,type:byId('filterType').value,areaChange:byId('filterAreaChange').value,dispatchStatus:byId('filterDispatchStatus').value,auditStatus:byId('filterAuditStatus').value,yearStart:byId('filterYearStart').value,yearEnd:byId('filterYearEnd').value,completedStart:byId('filterCompletedStart').value,completedEnd:byId('filterCompletedEnd').value}}
+    function validateFilters(f){var yearInvalid=f.yearStart&&f.yearEnd&&Number(f.yearStart)>Number(f.yearEnd);var timeInvalid=f.completedStart&&f.completedEnd&&f.completedStart>f.completedEnd;byId('buildingYearError').classList.toggle('visible',yearInvalid);byId('completedTimeError').classList.toggle('visible',timeInvalid);return !yearInvalid&&!timeInvalid}
+    function filterRows(){var f=readFilters();if(!validateFilters(f))return null;return getLatestRows().filter(function(row){var completedDate=row.completedAt?row.completedAt.slice(0,10):'';var orgMatched=!orgState.selectedType||(orgState.selectedType==='dept'?row.dept===orgState.selectedValue:row.zone===orgState.selectedValue);return String(row.surveyYear)===f.year&&orgMatched&&(!f.code||row.siteCode.toUpperCase().indexOf(f.code)>=0)&&(!f.name||row.siteName.indexOf(f.name)>=0)&&(!f.surveyStatus||row.surveyStatus===f.surveyStatus)&&(!f.reason||row.reason===f.reason)&&(!f.type||row.siteType===f.type)&&(!f.areaChange||areaChange(row)===f.areaChange)&&(!f.dispatchStatus||row.dispatchStatus===f.dispatchStatus)&&(!f.auditStatus||row.auditStatus===f.auditStatus)&&(!f.yearStart||row.buildingYear>=Number(f.yearStart))&&(!f.yearEnd||row.buildingYear<=Number(f.yearEnd))&&(!f.completedStart||completedDate>=f.completedStart)&&(!f.completedEnd||completedDate<=f.completedEnd)})}
+    function operationHtml(row){var canSync=hasValidResult(row)&&row.auditStatus==='审核通过'&&row.syncStatus!=='已同步';var canReturn=hasValidResult(row)&&row.syncStatus!=='已同步';var syncLabel=row.syncStatus==='已同步'?'已同步':'同步';return '<div class="op-group"><button class="link-btn" data-action="detail" data-key="'+escapeHtml(row.siteKey)+'">详情</button><button class="link-btn" data-action="sync" data-key="'+escapeHtml(row.siteKey)+'" '+(canSync?'':'disabled')+' title="'+(canSync?'同步最新审核通过结果':(row.syncStatus==='已同步'?'该结果已同步':'仅已完成且审核通过的结果可同步'))+'">'+syncLabel+'</button><button class="link-btn danger" data-action="return" data-key="'+escapeHtml(row.siteKey)+'" '+(canReturn?'':'disabled')+' title="'+(canReturn?'退回普查人员填报':(row.syncStatus==='已同步'?'已同步结果不可退回':'尚无可退回的完成结果'))+'">退回</button></div>'}
+    function render(){var rows=filterRows();if(rows===null)return;currentRows=rows;var pages=Math.max(1,Math.ceil(rows.length/pageSize));if(currentPage>pages)currentPage=pages;var pageRows=rows.slice((currentPage-1)*pageSize,currentPage*pageSize);byId('siteBody').innerHTML=pageRows.length?pageRows.map(function(row,index){var rate=areaRate(row);var delta=areaDelta(row);var changeCls=delta===null?'empty-value':(delta>0?'change-up':(delta<0?'change-down':'change-zero'));return '<tr><td>'+((currentPage-1)*pageSize+index+1)+'</td><td>'+escapeHtml(row.siteCode||'—')+'</td><td><strong>'+escapeHtml(row.siteName)+'</strong></td><td>'+statusTag(row.surveyStatus)+'</td><td>'+escapeHtml(row.reason||'—')+'</td><td>'+statusTag(row.dispatchStatus)+'</td><td>'+statusTag(row.auditStatus)+'</td><td>'+escapeHtml(row.dept)+'</td><td>'+escapeHtml(row.zone)+'</td><td>'+escapeHtml(row.siteType)+'</td><td>'+escapeHtml(row.office||'—')+'</td><td class="address-cell" title="'+escapeHtml(row.address)+'">'+escapeHtml(row.address||'—')+'</td><td>'+escapeHtml(row.buildingYear||'—')+'</td><td class="num">'+numberText(hasValidResult(row)?row.originalArea:null)+'</td><td class="num">'+numberText(hasValidResult(row)?row.currentArea:null)+'</td><td class="num '+changeCls+'">'+rate+'</td><td>'+areaChange(row)+'</td><td class="num '+changeCls+'">'+deltaText(hasValidResult(row)?row.residentialDelta:null)+'</td><td class="num '+changeCls+'">'+deltaText(hasValidResult(row)?row.nonResidentialDelta:null)+'</td><td>'+escapeHtml(row.surveyor||'待分配')+'</td><td>'+escapeHtml(row.completedAt||'—')+'</td><td class="sticky-operation">'+operationHtml(row)+'</td></tr>'}).join(''):'<tr class="empty-row"><td colspan="22">暂无符合条件的计划外普查站点</td></tr>';byId('totalText').textContent='共 '+rows.length+' 个站点';renderPages(pages)}
+    function renderPages(pages){var html='<button class="page-btn" data-page="prev" '+(currentPage===1?'disabled':'')+'>‹</button>';for(var i=1;i<=pages;i++)html+='<button class="page-btn '+(i===currentPage?'active':'')+'" data-page="'+i+'">'+i+'</button>';html+='<button class="page-btn" data-page="next" '+(currentPage===pages?'disabled':'')+'>›</button>';byId('pageBox').innerHTML=html}
+    function syncUrl(){var f=readFilters();var params=new URLSearchParams();Object.keys(f).forEach(function(key){if(f[key])params.set(key,f[key])});history.replaceState(null,'',location.pathname+'?'+params.toString())}
+    function loadUrl(){var p=new URLSearchParams(location.search);var ids={year:'filterYear',code:'filterCode',name:'filterName',surveyStatus:'filterSurveyStatus',reason:'filterReason',type:'filterType',areaChange:'filterAreaChange',dispatchStatus:'filterDispatchStatus',auditStatus:'filterAuditStatus',yearStart:'filterYearStart',yearEnd:'filterYearEnd',completedStart:'filterCompletedStart',completedEnd:'filterCompletedEnd'};Object.keys(ids).forEach(function(key){if(p.has(key))byId(ids[key]).value=p.get(key)});if(!p.has('year'))byId('filterYear').value='2026'}
+    function showToast(message){var t=byId('toast');t.textContent=message;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(function(){t.classList.remove('show')},2200)}
+    function closeModal(){byId('actionModal').style.display='none';byId('returnReason').value='';byId('reasonCount').textContent='0/300';byId('returnReason').classList.remove('invalid');byId('reasonError').classList.remove('visible');activeRow=null;activeAction=''}
+    function openModal(row,action){activeRow=row;activeAction=action;byId('modalTitle').textContent=action==='sync'?'同步普查结果':'退回普查结果';byId('syncContent').style.display=action==='sync'?'block':'none';byId('returnContent').style.display=action==='return'?'block':'none';byId('syncSiteName').textContent=row.siteName;byId('returnSiteName').textContent=row.siteName;byId('modalConfirm').textContent=action==='sync'?'确认同步':'确认退回';byId('actionModal').style.display='flex';if(action==='return')setTimeout(function(){byId('returnReason').focus()},0)}
+    byId('menuArrow').parentElement.addEventListener('click',function(){byId('menuArrow').classList.toggle('collapsed');document.querySelectorAll('.menu-child').forEach(function(item){item.classList.toggle('menu-collapsed')})});
+    byId('orgSearch').addEventListener('input',function(){orgState.keyword=this.value;renderOrgTree()});
+    byId('orgTree').addEventListener('click',function(e){var button=e.target.closest('[data-org-action]');if(!button)return;var action=button.dataset.orgAction;var value=button.dataset.orgValue;if(action==='toggle'){if(orgState.expandedDepts.has(value))orgState.expandedDepts.delete(value);else orgState.expandedDepts.add(value);renderOrgTree();return}orgState.selectedType=action==='select-dept'?'dept':'zone';orgState.selectedValue=value;currentPage=1;renderOrgTree();render()});
+    byId('orgReset').addEventListener('click',function(){orgState.keyword='';orgState.selectedType='';orgState.selectedValue='';orgState.expandedDepts=new Set(orgData.map(function(item){return item.dept}));byId('orgSearch').value='';currentPage=1;renderOrgTree();render()});
+    byId('searchBtn').addEventListener('click',function(){currentPage=1;if(filterRows()!==null){syncUrl();render()}});
+    byId('resetBtn').addEventListener('click',function(){['filterCode','filterName','filterYearStart','filterYearEnd','filterCompletedStart','filterCompletedEnd'].forEach(function(id){byId(id).value=''});['filterSurveyStatus','filterReason','filterType','filterAreaChange','filterDispatchStatus','filterAuditStatus'].forEach(function(id){byId(id).value=''});byId('filterYear').value='2026';currentPage=1;validateFilters(readFilters());syncUrl();render()});
+    document.querySelectorAll('#filterCode,#filterName').forEach(function(input){input.addEventListener('keydown',function(e){if(e.key==='Enter')byId('searchBtn').click()})});
+    byId('pageBox').addEventListener('click',function(e){var btn=e.target.closest('[data-page]');if(!btn||btn.disabled)return;var value=btn.dataset.page;var pages=Math.max(1,Math.ceil(currentRows.length/pageSize));currentPage=value==='prev'?currentPage-1:(value==='next'?currentPage+1:Number(value));currentPage=Math.max(1,Math.min(pages,currentPage));render()});
+    byId('siteBody').addEventListener('click',function(e){var btn=e.target.closest('[data-action]');if(!btn||btn.disabled)return;var row=getLatestRows().find(function(item){return item.siteKey===btn.dataset.key});if(!row)return;if(btn.dataset.action==='detail'){var returnQuery=encodeURIComponent(location.search.slice(1));location.href='plan-outside-survey-task-detail.html?id='+encodeURIComponent(row.latestTaskId)+'&taskId='+encodeURIComponent(row.latestTaskId)+'&siteCode='+encodeURIComponent(row.siteCode)+'&auditStatus='+encodeURIComponent(row.auditStatus)+'&source=site-details&returnQuery='+returnQuery;return}openModal(row,btn.dataset.action)});
+    byId('modalClose').addEventListener('click',closeModal);byId('modalCancel').addEventListener('click',closeModal);byId('actionModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+    byId('returnReason').addEventListener('input',function(){byId('reasonCount').textContent=this.value.length+'/300';if(this.value.trim()){this.classList.remove('invalid');byId('reasonError').classList.remove('visible')}});
+    byId('modalConfirm').addEventListener('click',function(){if(!activeRow)return;var button=this;if(activeAction==='return'&&!byId('returnReason').value.trim()){byId('returnReason').classList.add('invalid');byId('reasonError').classList.add('visible');return}button.disabled=true;button.textContent='处理中...';setTimeout(function(){if(activeAction==='sync'){activeRow.syncStatus='已同步';showToast(activeRow.siteName+' 的最新普查结果已同步')}else{activeRow.surveyStatus='进行中';activeRow.auditStatus='已退回';activeRow.completedAt='';showToast(activeRow.siteName+' 已退回普查人员填报')}button.disabled=false;closeModal();render()},350)});
+    loadUrl();renderOrgTree();render();
+  </script>
+</body>
+</html>

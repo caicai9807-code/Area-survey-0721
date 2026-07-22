@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面积普查 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .placeholder-card{min-height:420px;display:flex;align-items:center;justify-content:center;text-align:center}
+    .placeholder-result{max-width:520px;padding:48px 24px}
+    .placeholder-icon{width:72px;height:72px;margin:0 auto 22px;border-radius:20px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary);font-size:34px;font-weight:700}
+    .placeholder-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:12px}
+    .placeholder-description{color:var(--muted);line-height:1.8;margin-bottom:26px}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand"><div class="brand-badge">▦</div><span>面积普查管理系统</span><span class="chip" style="background:rgba(255,255,255,.15);font-weight:600">原型环境</span></div>
+      <div class="top-actions"><div class="top-dropdown"><span class="top-label">演示身份:</span> 业务用户 <span style="font-size:10px">▼</span></div><div class="avatar">用</div><span>用户</span></div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false"><span class="menu-icon">▣</span>计划外面积普查<span class="menu-arrow" id="menuArrow">▲</span></a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查任务管理</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-items.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查任务</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html"><span class="menu-icon" style="visibility:hidden">▣</span>我的计划外普查任务</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-site-details.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查站点明细</a>
+          <a class="menu-item area-survey-entry active" href="area-survey-placeholder.html"><span class="menu-icon">▣</span>面积普查</a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb"><a href="#">首页</a><span>/</span><span>面积普查</span></nav>
+        <div style="font-size:20px;font-weight:700;margin:18px 0">面积普查</div>
+        <section class="card placeholder-card">
+          <div class="placeholder-result">
+            <div class="placeholder-icon">▦</div>
+            <div class="placeholder-title">面积普查功能建设中</div>
+            <p class="placeholder-description">年度面积普查相关功能将在后续版本中逐步开放。当前可继续使用计划外面积普查相关功能。</p>
+            <a class="btn primary" href="plan-outside-survey-task-list.html">返回计划外普查任务管理</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    document.querySelector('.menu-parent').addEventListener('click',function(){document.getElementById('menuArrow').classList.toggle('collapsed');document.querySelectorAll('.menu-child').forEach(function(item){item.classList.toggle('menu-collapsed')})});
+  </script>
+</body>
+</html>
