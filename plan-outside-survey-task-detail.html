@@ -36,6 +36,25 @@
     .reason-tab { position: relative; padding: 14px 20px; font-size: 14px; color: var(--muted); cursor: pointer; transition: color 0.2s; white-space: nowrap; }
     .reason-tab.active { color: var(--primary); font-weight: 600; }
     .reason-tab.active::after { content: ""; position: absolute; left: 20px; right: 20px; bottom: -1px; height: 2px; background: var(--primary); border-radius: 1px; }
+    .tab-panel[hidden] { display: none; }
+    .attachment-panel { min-height: 420px; padding: 28px; background: #f7f9fc; }
+    .attachment-file { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 760px; margin: 0 auto 20px; padding: 14px 16px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .attachment-file-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .attachment-file-icon { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 48px; flex-shrink: 0; color: #fff; background: #e5484d; border-radius: 5px; font-size: 12px; font-weight: 700; }
+    .attachment-file-name { color: var(--text); font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attachment-file-meta { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .attachment-file-status { flex-shrink: 0; padding: 3px 9px; color: var(--success); background: var(--success-soft); border-radius: 10px; font-size: 12px; }
+    .pdf-preview { width: min(420px, 100%); aspect-ratio: 210 / 297; margin: 0 auto; padding: 36px 32px; background: #fff; border: 1px solid #dfe5ef; box-shadow: 0 8px 24px rgba(40, 57, 82, 0.12); }
+    .pdf-preview-title { margin-bottom: 24px; color: #303b4f; font-size: 18px; font-weight: 700; text-align: center; }
+    .pdf-preview-line { height: 8px; margin-bottom: 12px; background: #edf1f6; border-radius: 2px; }
+    .pdf-preview-line.short { width: 58%; }
+    .pdf-preview-table { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 26px; border-top: 1px solid #dfe5ef; border-left: 1px solid #dfe5ef; }
+    .pdf-preview-cell { height: 38px; border-right: 1px solid #dfe5ef; border-bottom: 1px solid #dfe5ef; }
+    .pdf-preview-mark { margin-top: 22px; color: var(--muted); font-size: 12px; text-align: center; }
+    .empty-preview { min-height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); }
+    .empty-preview-icon { display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 56px; color: var(--primary); background: var(--primary-soft); border: 1px solid #d6e4ff; border-radius: 8px; font-size: 28px; }
+    .empty-preview-title { color: var(--text-2); font-size: 14px; font-weight: 600; }
+    .empty-preview-note { font-size: 12px; }
 
     /* 主体两栏：左侧允许收缩并由表格内部滚动，避免审批记录被挤出视口 */
     .main { min-width: 0; }
@@ -260,9 +279,10 @@
             <div class="reason-tabs" id="reasonTabs">
               <div class="reason-tab active" data-tab="summary">汇总表</div>
               <div class="reason-tab" data-tab="plan">平面图</div>
-              <div class="reason-tab" data-tab="photo">门头图片</div>
+              <div class="reason-tab" data-tab="attachment" id="attachmentTab">门头图片</div>
             </div>
             <section class="card no-top-radius">
+              <div class="tab-panel" id="summaryPanel" data-panel="summary">
               <!-- 统计卡 -->
               <div class="stat-row" style="padding: 16px 20px 0;">
                 <section class="card stat-card">
@@ -315,6 +335,15 @@
                   <select><option>10条/页</option><option>20条/页</option></select>
                 </div>
               </div>
+              </div>
+              <div class="tab-panel" id="planPanel" data-panel="plan" hidden>
+                <div class="empty-preview">
+                  <div class="empty-preview-icon">▱</div>
+                  <div class="empty-preview-title">站点平面图</div>
+                  <div class="empty-preview-note">平面图占位展示</div>
+                </div>
+              </div>
+              <div class="tab-panel attachment-panel" id="attachmentPanel" data-panel="attachment" hidden></div>
             </section>
           </div>
 
@@ -456,20 +485,22 @@
             <div class="bd-item full"><span class="bd-label">备注</span><span class="bd-value" id="ddRemark">-</span></div>
           </div>
         </div>
-        <div class="change-section-title">变更详情</div>
-        <table class="change-table">
-          <thead>
-            <tr>
-              <th style="width:50px;">序号</th>
-              <th>热费卡号</th>
-              <th>普查面积</th>
-              <th>普查依据</th>
-              <th>附件</th>
-              <th>备注</th>
-            </tr>
-          </thead>
-          <tbody id="changeTbody"></tbody>
-        </table>
+        <div id="changeDetailSection">
+          <div class="change-section-title">变更详情</div>
+          <table class="change-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">序号</th>
+                <th>热费卡号</th>
+                <th>普查面积</th>
+                <th>普查依据</th>
+                <th>附件</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody id="changeTbody"></tbody>
+          </table>
+        </div>
       </div>
       <div class="modal-footer">
         <div></div>
@@ -513,6 +544,7 @@
       '60218B004': { type: '用户站', name: '裕华区万达站', code: '60218B004', fullName: '石家庄市裕华区万达商业广场', short: '万达广场', addr: '石家庄市裕华区槐安东路120号', dept: '裕华管理部', zone: '裕华管理部', district: '裕华区', office: '槐底街道办事处', worker: '李明', reason: '面积变化', contact: '李主任', phone: '13512345678', unNet: [0, 2] },
       '60218B012': { type: '自管站', name: '桥西区东站', code: '60218B012', addr: '石家庄市桥西区中山东路188号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '东里街道办事处', worker: '刘洋', reason: '面积变化', contact: '刘洋', phone: '13600005678', unNet: [1, 1] }
     };
+    var currentSiteType = '自管站';
 
     function resolveDetailContext() {
       var defaultTaskId = 'OUT-2026-001';
@@ -541,6 +573,7 @@
     function renderSite() {
       var context = resolveDetailContext();
       var s = context.site;
+      currentSiteType = s.type || '自管站';
       document.title = s.name + ' - 任务详情 - 面积普查管理系统';
       var detailTitle = document.getElementById('detailTitle');
       var statusChip = document.getElementById('statusChip');
@@ -566,6 +599,31 @@
       // 区分自管站/用户站：换热站编码 ↔ 用户编码
       var codeLabel = s.type === '用户站' ? '用户编码' : '换热站编码';
       document.querySelector('#siteInfoGrid .si-item:first-child .si-label').textContent = codeLabel;
+      configureAttachmentTab();
+    }
+
+    function configureAttachmentTab() {
+      var isUserStation = currentSiteType === '用户站';
+      document.getElementById('attachmentTab').textContent = isUserStation ? '普查明细表' : '门头图片';
+      document.getElementById('attachmentPanel').innerHTML = isUserStation
+        ? '<div class="attachment-file">' +
+            '<div class="attachment-file-main">' +
+              '<span class="attachment-file-icon">PDF</span>' +
+              '<div><div class="attachment-file-name">用户站普查明细表.pdf</div><div class="attachment-file-meta">PDF 文件 · 普查明细表</div></div>' +
+            '</div>' +
+            '<span class="attachment-file-status">已上传</span>' +
+          '</div>' +
+          '<div class="pdf-preview" aria-label="用户站普查明细表 PDF 预览占位">' +
+            '<div class="pdf-preview-title">用户站面积普查明细表</div>' +
+            '<div class="pdf-preview-line"></div><div class="pdf-preview-line short"></div>' +
+            '<div class="pdf-preview-table">' + Array(24).fill('<div class="pdf-preview-cell"></div>').join('') + '</div>' +
+            '<div class="pdf-preview-mark">PDF 预览占位</div>' +
+          '</div>'
+        : '<div class="empty-preview">' +
+            '<div class="empty-preview-icon">▧</div>' +
+            '<div class="empty-preview-title">站点门头图片</div>' +
+            '<div class="empty-preview-note">门头图片占位展示</div>' +
+          '</div>';
     }
     renderSite();
 
@@ -684,6 +742,10 @@
       if (!t) return;
       document.querySelectorAll('.reason-tab').forEach(function(x) { x.classList.remove('active'); });
       t.classList.add('active');
+      var activeTab = t.getAttribute('data-tab');
+      document.querySelectorAll('.tab-panel').forEach(function(panel) {
+        panel.hidden = panel.getAttribute('data-panel') !== activeTab;
+      });
     });
 
     document.getElementById('backBtn').addEventListener('click', function() { history.back(); });
@@ -856,16 +918,19 @@
       fileEl.textContent = b.file || '-';
       fileEl.href = '#';
       document.getElementById('ddRemark').textContent = b.remark || '无';
-      document.getElementById('changeTbody').innerHTML = changeMock.map(function(c) {
-        return '<tr>' +
-          '<td>' + c.no + '</td>' +
-          '<td>' + c.card + '</td>' +
-          '<td>' + c.area + '</td>' +
-          '<td>' + c.basis + '</td>' +
-          '<td><a href="#">' + c.file + '</a></td>' +
-          '<td>' + c.remark + '</td>' +
-        '</tr>';
-      }).join('');
+      var changeDetailSection = document.getElementById('changeDetailSection');
+      var isUserStation = currentSiteType === '用户站';
+      changeDetailSection.style.display = isUserStation ? 'none' : 'block';
+      document.getElementById('changeTbody').innerHTML = isUserStation ? '' : changeMock.map(function(c) {
+          return '<tr>' +
+            '<td>' + c.no + '</td>' +
+            '<td>' + c.card + '</td>' +
+            '<td>' + c.area + '</td>' +
+            '<td>' + c.basis + '</td>' +
+            '<td><a href="#">' + c.file + '</a></td>' +
+            '<td>' + c.remark + '</td>' +
+          '</tr>';
+        }).join('');
       document.getElementById('bdDetailModal').style.display = 'flex';
     }
     document.getElementById('bdBody').addEventListener('click', function(e) {
