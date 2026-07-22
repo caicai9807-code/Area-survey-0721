@@ -201,6 +201,7 @@
                   <th>普查原因</th>
                   <th>管理部</th>
                   <th>审核状态</th>
+                  <th>任务结束时间</th>
                   <th>最近操作时间</th>
                   <th>操作</th>
                 </tr>
@@ -229,14 +230,14 @@
     });
 
     var tasks = [
-      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', audit: '未审核', lastOp: '2026-07-16 09:30', assignee: '李明', time: '2026-07-16' },
-      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', audit: '片区审核通过', lastOp: '2026-07-18 14:20', assignee: '李明', time: '2026-07-18' },
-      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', audit: '退回修改中', lastOp: '2026-07-15 11:00', assignee: '李明', time: '2026-07-14' },
-      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', audit: '片区审核中', lastOp: '2026-07-10 16:30', assignee: '李明', time: '2026-07-10' },
-      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', audit: '退回修改中', lastOp: '2026-07-09 10:45', assignee: '李明', time: '2026-07-09' },
-      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', audit: '管理部审核通过', lastOp: '2026-07-05 17:00', assignee: '李明', time: '2026-07-05' },
-      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', audit: '未审核', lastOp: '2026-07-20 08:30', assignee: '李明', time: '2026-07-20' },
-      { id: 108, name: '计划外裕华区趸售用户一号站', code: '60218B013', name2: '趸售用户一号站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', audit: '未审核', lastOp: '2026-07-22 10:15', assignee: '李明', time: '2026-07-22' }
+      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', audit: '未审核', taskEndDate: '2026-07-31', lastOp: '2026-07-16 09:30', assignee: '李明' },
+      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', audit: '片区审核通过', taskEndDate: '2026-08-08', lastOp: '2026-07-18 14:20', assignee: '李明' },
+      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', audit: '退回修改中', taskEndDate: '2026-08-08', lastOp: '2026-07-15 11:00', assignee: '李明' },
+      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', audit: '片区审核中', taskEndDate: '2026-08-14', lastOp: '2026-07-10 16:30', assignee: '李明' },
+      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', audit: '退回修改中', taskEndDate: '2026-07-25', lastOp: '2026-07-09 10:45', assignee: '李明' },
+      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', audit: '管理部审核通过', taskEndDate: '2026-07-05', lastOp: '2026-07-05 17:00', assignee: '李明' },
+      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', audit: '未审核', taskEndDate: '2026-08-01', lastOp: '2026-07-20 08:30', assignee: '李明' },
+      { id: 108, name: '计划外裕华区趸售用户一号站', code: '60218B013', name2: '趸售用户一号站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', audit: '未审核', taskEndDate: '2026-07-31', lastOp: '2026-07-22 10:15', assignee: '李明' }
     ];
     var pageSize = 10;
     var currentPage = 1;
@@ -257,8 +258,8 @@
         if (name && t.name2.toLowerCase().indexOf(name) === -1) return false;
         if (type && t.type !== type) return false;
         if (status && t.status !== status) return false;
-        if (start && t.time < start) return false;
-        if (end && t.time > end) return false;
+        if (start && (!t.taskEndDate || t.taskEndDate < start)) return false;
+        if (end && (!t.taskEndDate || t.taskEndDate > end)) return false;
         return true;
       });
     }
@@ -274,17 +275,20 @@
     function renderOps(t) {
       var s = t.status;
       var sep = '<span style="color:#d5deed;margin:0 1px;">|</span>';
+      var viewHref = t.reason === '趸售用户' ? 'plan-outside-survey-task-dh-detail.html?id=' + encodeURIComponent(t.code) + '&source=worker' : '#';
+      var viewLink = '<a class="action-link" href="' + viewHref + '">查看</a>';
       if (s === '进行中' || s === '进行中（已撤回）' || s === '已退回') {
         var fillPage = t.reason === '趸售用户' ? 'plan-outside-survey-task-dh-fill.html' : (t.type === '用户站' ? 'plan-outside-survey-task-user-fill.html' : 'plan-outside-survey-task-self-fill.html');
-        return '<a class="action-link" href="' + fillPage + '?id=' + encodeURIComponent(t.code) + '">填报</a>' + sep + '<a class="action-link" href="#" data-op="report" data-id="' + t.id + '">上报</a>' + sep + '<a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
+        var detailLink = t.reason === '趸售用户' ? viewLink + sep : '';
+        return detailLink + '<a class="action-link" href="' + fillPage + '?id=' + encodeURIComponent(t.code) + '">填报</a>' + sep + '<a class="action-link" href="#" data-op="report" data-id="' + t.id + '">上报</a>' + sep + '<a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
       }
       if (s === '站长审核') {
-        return '<a class="action-link" href="#">查看</a>' + sep + '<a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
+        return viewLink + sep + '<a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
       }
       if (s === '已完成') {
-        return '<a class="action-link" href="#">查看</a>';
+        return viewLink;
       }
-      return '<a class="action-link" href="#">查看</a>';
+      return viewLink;
     }
 
     function render() {
@@ -299,19 +303,20 @@
         tbody.innerHTML = rows.map(function(t) {
           return '<tr>' +
             '<td>' + t.id + '</td>' +
-            '<td><a class="action-link" href="#">' + esc(t.name) + '</a></td>' +
+            '<td>' + esc(t.name) + '</td>' +
             '<td>' + esc(t.code) + '</td>' +
             '<td><strong>' + esc(t.name2) + '</strong></td>' +
             '<td>' + typeTag(t.type) + '</td>' +
             '<td>' + esc(t.reason) + '</td>' +
             '<td>' + esc(t.dept) + '</td>' +
             '<td>' + esc(t.audit || '-') + '</td>' +
+            '<td>' + (t.taskEndDate ? esc(t.taskEndDate) : '—') + '</td>' +
             '<td>' + esc(t.lastOp || '-') + '</td>' +
             '<td><div class="action-row">' + renderOps(t) + '</div></td>' +
             '</tr>';
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
       }
 
       var box = document.getElementById('pageBox');
@@ -335,14 +340,21 @@
     });
 
     // 筛选/重置
-    document.getElementById('doSearch').addEventListener('click', function() { currentPage = 1; render(); });
+    function applyFilters() {
+      var start = document.getElementById('filterStart').value;
+      var end = document.getElementById('filterEnd').value;
+      if (start && end && start > end) { alert('开始时间不能晚于结束时间'); return; }
+      currentPage = 1;
+      render();
+    }
+    document.getElementById('doSearch').addEventListener('click', applyFilters);
     document.getElementById('doReset').addEventListener('click', function() {
       document.querySelectorAll('.filter-grid-4 input').forEach(function(e) { e.value = ''; });
       document.querySelectorAll('.filter-grid-4 select').forEach(function(e) { e.value = ''; });
       currentPage = 1; render();
     });
     document.querySelectorAll('.filter-grid-4 input').forEach(function(input) {
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { currentPage = 1; render(); } });
+      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') applyFilters(); });
     });
 
     // 分页

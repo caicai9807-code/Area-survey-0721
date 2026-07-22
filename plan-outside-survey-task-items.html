@@ -361,6 +361,7 @@
                   <th>普查人员</th>
                   <th>下发状态</th>
                   <th>审核状态</th>
+                  <th>任务结束时间</th>
                   <th><button class="sortable-header" id="timeSortBtn" type="button" aria-label="最近操作时间，点击按降序排序">最近操作时间 <span class="sort-icon" id="timeSortIcon">⇅</span></button></th>
                   <th>操作</th>
                 </tr>
@@ -420,16 +421,16 @@
 
     // 模拟数据
     var tasks = [
-      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-16 09:20' },
-      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-18 11:05' },
-      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩', dispatchStatus: '已下发', auditStatus: '待填报', lastOperationTime: '2026-07-16 15:40' },
-      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰', dispatchStatus: '已下发', auditStatus: '所长审核', lastOperationTime: '2026-07-17 16:30' },
-      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦', dispatchStatus: '已下发', auditStatus: '专工审核', lastOperationTime: '2026-07-20 10:15' },
-      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁', dispatchStatus: '已下发', auditStatus: '主任审核', lastOperationTime: '2026-07-21 09:45' },
-      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋', dispatchStatus: '已下发', auditStatus: '审核通过', lastOperationTime: '2026-07-15 17:20' },
-      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏', dispatchStatus: '已下发', auditStatus: '已退回', lastOperationTime: '2026-07-14 14:10' },
-      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-19 13:25' },
-      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配', dispatchStatus: '未下发', auditStatus: '待填报', lastOperationTime: '2026-07-22 08:50' }
+      { id: 1, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '待分配', dispatchStatus: '未下发', auditStatus: '待填报', taskEndDate: '2026-07-31', lastOperationTime: '2026-07-16 09:20' },
+      { id: 2, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '李明', dispatchStatus: '未下发', auditStatus: '待填报', taskEndDate: '2026-08-08', lastOperationTime: '2026-07-18 11:05' },
+      { id: 3, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', worker: '王倩', dispatchStatus: '已下发', auditStatus: '待填报', taskEndDate: '2026-08-08', lastOperationTime: '2026-07-16 15:40' },
+      { id: 4, name: '计划外长安区北站新开户及增容', code: '60218B008', name2: '长安区北站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '赵峰', dispatchStatus: '已下发', auditStatus: '所长审核', taskEndDate: '2026-07-28', lastOperationTime: '2026-07-17 16:30' },
+      { id: 5, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', worker: '孙悦', dispatchStatus: '已下发', auditStatus: '专工审核', taskEndDate: '2026-08-14', lastOperationTime: '2026-07-20 10:15' },
+      { id: 6, name: '计划外裕华区东南站趸售', code: '60218B007', name2: '裕华区东南站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', worker: '周洁', dispatchStatus: '已下发', auditStatus: '主任审核', taskEndDate: '2026-08-20', lastOperationTime: '2026-07-21 09:45' },
+      { id: 7, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', worker: '刘洋', dispatchStatus: '已下发', auditStatus: '审核通过', taskEndDate: '2026-07-05', lastOperationTime: '2026-07-15 17:20' },
+      { id: 8, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', worker: '陈敏', dispatchStatus: '已下发', auditStatus: '已退回', taskEndDate: '2026-07-25', lastOperationTime: '2026-07-14 14:10' },
+      { id: 9, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', worker: '张强', dispatchStatus: '未下发', auditStatus: '待填报', taskEndDate: '2026-08-01', lastOperationTime: '2026-07-19 13:25' },
+      { id: 10, name: '计划外裕华区中心站面积变化', code: '60218B001', name2: '裕华区中心站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', worker: '待分配', dispatchStatus: '未下发', auditStatus: '待填报', taskEndDate: '2026-07-31', lastOperationTime: '2026-07-22 08:50' }
     ];
     var currentTab = 'all';
     var pageSize = 10;
@@ -482,9 +483,8 @@
         if (type && t.type !== type) return false;
         if (dispatchStatus && t.dispatchStatus !== dispatchStatus) return false;
         if (auditStatus && t.auditStatus !== auditStatus) return false;
-        var operationDate = t.lastOperationTime ? t.lastOperationTime.slice(0, 10) : '';
-        if (start && (!operationDate || operationDate < start)) return false;
-        if (end && (!operationDate || operationDate > end)) return false;
+        if (start && (!t.taskEndDate || t.taskEndDate < start)) return false;
+        if (end && (!t.taskEndDate || t.taskEndDate > end)) return false;
         return true;
       });
       if (timeSortDirection) {
@@ -523,9 +523,13 @@
           var workerHtml = t.worker === '待分配'
             ? '<span style="color:var(--muted);">' + esc(t.worker) + '</span>'
             : esc(t.worker);
+          var isWholesale = t.reason === '趸售用户';
+          var detailHref = isWholesale
+            ? 'plan-outside-survey-task-dh-detail.html?id=' + encodeURIComponent(t.code) + '&source=items'
+            : 'plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code);
           return '<tr>' +
             '<td>' + t.id + '</td>' +
-            '<td><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">' + esc(t.name) + '</a></td>' +
+            '<td>' + esc(t.name) + '</td>' +
             '<td>' + esc(t.code) + '</td>' +
             '<td><strong>' + esc(t.name2) + '</strong></td>' +
             '<td><span class="tag ' + typeTagClass(t.type) + '">' + esc(t.type) + '</span></td>' +
@@ -535,12 +539,13 @@
             '<td>' + workerHtml + '</td>' +
             '<td><span class="compact-status ' + dispatchTagClass(t.dispatchStatus) + '">' + esc(t.dispatchStatus) + '</span></td>' +
             '<td><span class="compact-status ' + auditTagClass(t.auditStatus) + '">' + esc(t.auditStatus) + '</span></td>' +
+            '<td>' + (t.taskEndDate ? esc(t.taskEndDate) : '—') + '</td>' +
             '<td>' + (t.lastOperationTime ? esc(t.lastOperationTime) : '—') + '</td>' +
-            '<td><div class="action-row"><a class="action-link set-worker" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link dispatch"' + (t.worker === '待分配' || t.dispatchStatus !== '未下发' ? ' style="display:none"' : '') + ' data-dispatch="' + t.id + '">下发</a><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.code) + '">详情</a></div></td>' +
+            '<td><div class="action-row"><a class="action-link set-worker" data-task-id="' + t.id + '">设置普查人员</a><a class="action-link dispatch"' + (t.worker === '待分配' || t.dispatchStatus !== '未下发' ? ' style="display:none"' : '') + ' data-dispatch="' + t.id + '">下发</a><a class="action-link" href="' + detailHref + '">详情</a></div></td>' +
             '</tr>';
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
       }
 
       var box = document.getElementById('pageBox');
@@ -564,7 +569,14 @@
     });
 
     // 筛选/重置
-    document.getElementById('doSearch').addEventListener('click', function() { currentPage = 1; render(); });
+    function applyFilters() {
+      var start = document.getElementById('filterStart').value;
+      var end = document.getElementById('filterEnd').value;
+      if (start && end && start > end) { alert('开始时间不能晚于结束时间'); return; }
+      currentPage = 1;
+      render();
+    }
+    document.getElementById('doSearch').addEventListener('click', applyFilters);
     document.getElementById('doReset').addEventListener('click', function() {
       var inputs = document.querySelectorAll('.filter-grid-4 input');
       for (var i = 0; i < inputs.length; i++) inputs[i].value = '';
@@ -576,7 +588,7 @@
       render();
     });
     document.querySelectorAll('.filter-grid-4 input').forEach(function(input) {
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { currentPage = 1; render(); } });
+      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') applyFilters(); });
     });
 
     function updateTimeSortHeader() {

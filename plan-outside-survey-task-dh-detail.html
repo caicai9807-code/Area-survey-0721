@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>趸售用户站点详情 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .main { min-width: 0; }
+    .back-link { display:inline-flex; margin-bottom:12px; color:var(--text-2); font-size:13px; }
+    .detail-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
+    .detail-title { font-size:20px; font-weight:700; color:var(--text); }
+    .detail-title .status-chip { margin-left:10px; padding:3px 10px; border-radius:4px; font-size:12px; vertical-align:middle; }
+    .page-subtitle { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .approval-jump { padding-top:4px; color:var(--primary); font-size:13px; white-space:nowrap; }
+    .detail-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,320px); gap:16px; align-items:start; min-width:0; }
+    .detail-body > * { min-width:0; }
+    .site-card { padding:18px 20px; margin-bottom:16px; }
+    .site-name { margin-bottom:12px; font-size:16px; font-weight:700; }
+    .info-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 18px; }
+    .info-item { display:flex; align-items:baseline; gap:4px; min-width:0; }
+    .info-label { color:var(--muted); font-size:12px; white-space:nowrap; }
+    .info-label::after { content:"："; }
+    .info-value { color:var(--text); font-size:13px; overflow-wrap:anywhere; }
+    .stat-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .stat-card { padding:14px 18px; }
+    .stat-card.soft { background:linear-gradient(180deg,#f0f5ff 0%,#fff 100%); }
+    .stat-head { display:flex; align-items:center; justify-content:space-between; padding-bottom:10px; }
+    .stat-label { color:var(--text-2); font-size:13px; }
+    .stat-value { color:var(--text); font-size:22px; font-weight:700; }
+    .stat-value.muted { color:var(--muted-2); }
+    .stat-sub-row { display:grid; grid-template-columns:repeat(4,1fr); gap:0; padding:8px 0; border-top:1px dashed var(--border); }
+    .stat-sub-row.three { grid-template-columns:repeat(3,1fr); }
+    .stat-sub { display:flex; align-items:baseline; justify-content:space-between; gap:6px; padding:0 8px; }
+    .stat-sub + .stat-sub { border-left:1px dashed var(--border); }
+    .stat-sub span:first-child { color:var(--text-2); font-size:12px; }
+    .stat-sub strong { font-size:13px; }
+    .project-card .card-header { display:flex; align-items:center; justify-content:space-between; }
+    .table-scroll { width:100%; overflow-x:auto; }
+    .project-table { min-width:1040px; }
+    .project-table th,.project-table td,.building-table th,.building-table td { padding:10px 12px; white-space:nowrap; }
+    .project-table th,.building-table th { color:var(--text-2); background:#fafbfc; font-size:12px; }
+    .project-table th:last-child,.project-table td:last-child { position:sticky; right:0; z-index:2; min-width:72px; background:#fff; box-shadow:-8px 0 12px rgba(45,61,84,.08); }
+    .project-table th:last-child { z-index:3; background:#fafbfc; }
+    .project-table tbody tr:hover td:last-child { background:#f8faff; }
+    .status-done { color:var(--success); background:var(--success-soft); }
+    .status-pending { color:var(--muted); background:#f2f4f8; }
+    .status-director-review { color:#4c78f5; background:#e8efff; }
+    .status-returned { color:var(--danger); background:#fff0f0; }
+    .change-up { color:var(--success); font-weight:600; }
+    .change-down { color:var(--danger); font-weight:600; }
+    .change-zero { color:var(--muted); }
+    .action-link { color:var(--primary); cursor:pointer; }
+    .pagination { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; color:var(--muted); font-size:13px; }
+    .page-empty { padding:72px 24px; color:var(--muted); text-align:center; }
+    .page-empty strong { display:block; margin-bottom:8px; color:var(--text-2); font-size:16px; }
+    .approval-card { padding:16px 18px; overflow:hidden; }
+    .approval-title { margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); font-size:15px; font-weight:600; }
+    .approval-item { position:relative; padding:0 0 18px 24px; }
+    .approval-item:last-child { padding-bottom:0; }
+    .approval-item::before { content:""; position:absolute; left:7px; top:5px; width:9px; height:9px; border:2px solid var(--primary); border-radius:50%; background:#fff; }
+    .approval-item.done::before { border-color:var(--success); background:var(--success); }
+    .approval-item::after { content:""; position:absolute; left:11px; top:16px; bottom:-5px; width:2px; background:var(--border); }
+    .approval-item:last-child::after { display:none; }
+    .ap-head { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; font-size:12px; }
+    .ap-head strong { color:var(--text); font-size:13px; }
+    .ap-head span { color:var(--muted); white-space:nowrap; }
+    .ap-user { margin-bottom:6px; color:var(--text-2); font-size:12px; }
+    .ap-comment { padding:6px 8px; border:1px solid var(--border); border-radius:4px; background:#fafbfc; color:var(--text-2); font-size:12px; overflow-wrap:anywhere; }
+    .footer-bar { position:sticky; bottom:0; z-index:20; display:flex; justify-content:flex-end; gap:10px; margin-top:20px; padding:12px 24px; border-top:1px solid var(--border); background:#fff; box-shadow:0 -2px 8px rgba(0,0,0,.04); }
+    #projectModal .modal { width:min(1180px,calc(100vw - 48px)); }
+    #projectModal .modal-body { max-height:calc(100vh - 180px); overflow:auto; }
+    .section-title { margin:18px 0 12px; padding-top:14px; border-top:1px dashed var(--border); color:var(--text); font-size:14px; font-weight:600; }
+    .project-info { padding:4px 0; }
+    .project-info .info-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .attachment-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .file-card { display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--border); border-radius:8px; background:#fafbfc; }
+    .file-card.clickable { cursor:pointer; }
+    .file-card.clickable:hover { border-color:var(--primary); background:var(--primary-soft); }
+    .file-icon { display:flex; align-items:center; justify-content:center; width:42px; height:48px; flex-shrink:0; border-radius:5px; background:#e5484d; color:#fff; font-size:11px; font-weight:700; }
+    .file-icon.image { background:#4c78f5; }
+    .file-info { min-width:0; }
+    .file-name { overflow:hidden; color:var(--text); font-size:13px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+    .file-meta { margin-top:4px; color:var(--muted); font-size:12px; }
+    .project-stat { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .metric { padding:12px 14px; border:1px solid var(--border); border-radius:6px; background:#fafbfc; }
+    .metric span { display:block; margin-bottom:6px; color:var(--muted); font-size:12px; }
+    .metric strong { color:var(--text); font-size:18px; }
+    .building-table { min-width:1420px; }
+    .preview-shell { min-height:440px; padding:24px; background:#f3f5f8; text-align:center; }
+    .pdf-page { width:310px; aspect-ratio:210/297; margin:0 auto; padding:30px 26px; border:1px solid #dfe5ef; background:#fff; box-shadow:0 8px 22px rgba(40,57,82,.12); }
+    .pdf-title { margin-bottom:22px; color:#303b4f; font-size:17px; font-weight:700; }
+    .pdf-line { height:7px; margin-bottom:10px; border-radius:2px; background:#edf1f6; }
+    .pdf-line.short { width:58%; }
+    .pdf-grid { display:grid; grid-template-columns:repeat(4,1fr); margin-top:22px; border-top:1px solid #dfe5ef; border-left:1px solid #dfe5ef; }
+    .pdf-cell { height:30px; border-right:1px solid #dfe5ef; border-bottom:1px solid #dfe5ef; }
+    .plan-preview { position:relative; width:min(620px,100%); height:360px; margin:0 auto; border:1px solid #cfd8e6; background:repeating-linear-gradient(0deg,#fff 0,#fff 29px,#e8edf4 30px),repeating-linear-gradient(90deg,transparent 0,transparent 39px,#e8edf4 40px); }
+    .plan-preview::before,.plan-preview::after { content:""; position:absolute; border:3px solid #7083a0; }
+    .plan-preview::before { inset:48px 70px 90px 58px; }
+    .plan-preview::after { left:190px; top:48px; width:180px; height:218px; border-width:0 3px; }
+    .preview-note { margin-top:16px; color:var(--muted); font-size:12px; }
+    .audit-row { display:flex; align-items:flex-start; gap:12px; padding:12px 0; }
+    .audit-label { width:86px; padding-top:9px; flex-shrink:0; color:var(--text-2); font-size:13px; text-align:right; }
+    .audit-control { flex:1; min-width:0; }
+    .audit-control textarea,.audit-control select { width:100%; box-sizing:border-box; padding:9px 11px; border:1px solid var(--border); border-radius:5px; font-family:inherit; }
+    .audit-control textarea { min-height:96px; resize:vertical; }
+    .radio-group { display:flex; gap:22px; padding-top:8px; }
+    .error { display:none; margin-top:5px; color:var(--danger); font-size:12px; }
+    .error.show { display:block; }
+    @media(max-width:1180px){.detail-body{grid-template-columns:1fr}.info-grid{grid-template-columns:repeat(2,1fr)}.stat-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand"><div class="brand-badge">&#x25A6;</div><span>面积普查管理系统</span><span class="chip" style="background:rgba(255,255,255,.15);font-weight:600;">原型环境</span></div>
+      <div class="top-actions"><div class="top-dropdown"><span class="top-label">演示身份:</span> <span id="roleName">片区所</span> <span style="font-size:10px;">&#x25BC;</span></div><div class="avatar" id="roleAvatar">李</div><span id="roleUser">李明</span></div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#"><span class="menu-icon">&#x25A3;</span> 计划外面积普查 <span class="menu-arrow" id="menuArrow">&#x25B2;</span></a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html"><span class="menu-icon" style="visibility:hidden">□</span> 计划外普查任务管理</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-items.html"><span class="menu-icon" style="visibility:hidden">□</span> 计划外普查任务</a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html"><span class="menu-icon" style="visibility:hidden">□</span> 我的计划外普查任务</a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb"><a href="plan-outside-survey-task-worker.html" id="sourceBreadcrumb">我的计划外普查任务</a><span>/</span><span>趸售用户站点详情</span></nav>
+        <a class="back-link" href="plan-outside-survey-task-worker.html" id="backLink">&#x2190; 返回任务列表</a>
+        <div class="detail-header">
+          <div><div class="detail-title"><span id="detailName">趸售用户一号站</span> <span class="status-chip status-zone-review" id="statusChip">片区所审核</span></div><p class="page-subtitle" id="taskSubtitle">任务编号 OUT-2026-108 · 普查原因：趸售用户</p></div>
+          <a class="approval-jump" href="#approvalPanel">审批记录 &#x2193;</a>
+        </div>
+        <div class="detail-body">
+          <div>
+            <section class="card site-card">
+              <div class="site-name" id="siteName">趸售用户一号站</div>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-label">换热站编码</span><span class="info-value" id="siteCode">60218B013</span></div>
+                <div class="info-item"><span class="info-label">用热地址</span><span class="info-value" id="siteAddr">石家庄市裕华区槐安东路166号</span></div>
+                <div class="info-item"><span class="info-label">所属管理部</span><span class="info-value" id="siteDept">裕华管理部</span></div>
+                <div class="info-item"><span class="info-label">所属片区所</span><span class="info-value" id="siteZone">裕华片区所</span></div>
+                <div class="info-item"><span class="info-label">行政区</span><span class="info-value" id="siteDistrict">裕华区</span></div>
+                <div class="info-item"><span class="info-label">办事处</span><span class="info-value" id="siteOffice">槐底街道办事处</span></div>
+                <div class="info-item"><span class="info-label">普查人员</span><span class="info-value" id="siteWorker">李明</span></div>
+                <div class="info-item"><span class="info-label">联系人</span><span class="info-value" id="siteContact">周经理</span></div>
+                <div class="info-item"><span class="info-label">联系方式</span><span class="info-value" id="sitePhone">13900001313</span></div>
+              </div>
+            </section>
+            <div class="stat-row">
+              <section class="card stat-card">
+                <div class="stat-head"><span class="stat-label">任务总面积（参考）</span><span class="stat-value muted" id="refTotal">0</span></div>
+                <div class="stat-sub-row"><div class="stat-sub"><span>住宅面积</span><strong id="refHome">0</strong></div><div class="stat-sub"><span>高层</span><strong id="refHigh">0</strong></div><div class="stat-sub"><span>多层</span><strong id="refMulti">0</strong></div><div class="stat-sub"><span>公寓</span><strong id="refApartment">0</strong></div></div>
+                <div class="stat-sub-row three"><div class="stat-sub"><span>非住宅</span><strong id="refOther">0</strong></div><div class="stat-sub"><span>非居</span><strong id="refNonResident">0</strong></div><div class="stat-sub"><span>非协</span><strong id="refNonAgreement">0</strong></div></div>
+              </section>
+              <section class="card stat-card soft">
+                <div class="stat-head"><span class="stat-label">本次填报面积</span><span class="stat-value" id="curTotal">0</span></div>
+                <div class="stat-sub-row"><div class="stat-sub"><span>住宅面积</span><strong id="curHome">0</strong></div><div class="stat-sub"><span>高层</span><strong id="curHigh">0</strong></div><div class="stat-sub"><span>多层</span><strong id="curMulti">0</strong></div><div class="stat-sub"><span>公寓</span><strong id="curApartment">0</strong></div></div>
+                <div class="stat-sub-row three"><div class="stat-sub"><span>非住宅</span><strong id="curOther">0</strong></div><div class="stat-sub"><span>非居</span><strong id="curNonResident">0</strong></div><div class="stat-sub"><span>非协</span><strong id="curNonAgreement">0</strong></div></div>
+              </section>
+            </div>
+            <section class="card project-card">
+              <div class="card-header"><div class="card-title">普查项目列表 <span style="color:var(--muted);font-size:12px;font-weight:400;">（共 <span id="projectCount">0</span> 项）</span></div></div>
+              <div class="table-scroll"><table class="project-table"><thead><tr><th>序号</th><th>项目名称</th><th>用热地址</th><th>建筑物数量</th><th>原面积</th><th>现普查面积</th><th>面积变化</th><th>平面图</th><th>操作</th></tr></thead><tbody id="projectBody"></tbody></table></div>
+              <div class="pagination"><span>总共 <span id="projectTotal">0</span> 个项目</span><span>10条/页</span></div>
+            </section>
+          </div>
+          <aside id="approvalPanel"><section class="card approval-card"><div class="approval-title">审批记录</div><div class="approval-list" id="approvalList">
+            <div class="approval-item"><div class="ap-head"><strong id="currentApprovalTitle">片区所审核</strong><span>待处理</span></div><div class="ap-user" id="currentApprovalUser">李明（所长）</div><div class="ap-comment" id="currentApprovalComment">请核对趸售项目及楼栋面积。</div></div>
+            <div class="approval-item done"><div class="ap-head"><strong>任务上报</strong><span>2026-07-22 10:15</span></div><div class="ap-user">李明（普查员）</div><div class="ap-comment">已完成趸售用户项目填报。</div></div>
+            <div class="approval-item done"><div class="ap-head"><strong>任务下发</strong><span>2026-07-21 09:30</span></div><div class="ap-user">系统自动</div><div class="ap-comment">任务已下发至普查人员。</div></div>
+          </div></section></aside>
+        </div>
+        <div class="footer-bar"><button class="btn" id="backBtn">返回</button><button class="btn primary" id="auditBtn">审核</button></div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="projectModal" style="display:none;"><div class="modal"><div class="modal-header"><div class="modal-title" id="projectTitle">项目详情</div><button class="modal-close" data-close="projectModal">&times;</button></div><div class="modal-body">
+    <section class="project-info"><div class="info-grid" id="projectInfo"></div></section>
+    <div class="section-title">附件预览</div><div class="attachment-grid" id="projectAttachments"></div>
+    <div class="section-title">项目面积统计</div><div class="project-stat" id="projectStats"></div>
+    <div class="section-title">楼栋/建筑物数据</div><div class="table-scroll"><table class="building-table"><thead><tr><th>序号</th><th>楼号或建筑物名称</th><th>层数</th><th>用热性质</th><th>收费类别</th><th>普查状态</th><th>原面积(m²)</th><th>现面积(m²)</th><th>变化(m²)</th><th>变化率</th><th>控制方式</th><th>暖气类型</th><th>年代</th><th>普查依据</th><th>附件</th><th>备注</th></tr></thead><tbody id="buildingBody"></tbody></table></div>
+  </div><div class="modal-footer"><div></div><div class="modal-footer-actions"><button class="btn" data-close="projectModal">关闭</button></div></div></div></div>
+
+  <div class="modal-overlay" id="previewModal" style="display:none;"><div class="modal" style="width:min(760px,calc(100vw - 48px));"><div class="modal-header"><div class="modal-title" id="previewTitle">附件预览</div><button class="modal-close" data-close="previewModal">&times;</button></div><div class="modal-body preview-shell" id="previewBody"></div><div class="modal-footer"><div></div><button class="btn" data-close="previewModal">关闭</button></div></div></div>
+
+  <div class="modal-overlay" id="auditModal" style="display:none;"><div class="modal" style="width:620px;"><div class="modal-header"><div class="modal-title">审核</div><button class="modal-close" data-close="auditModal">&times;</button></div><div class="modal-body">
+    <div class="audit-row"><span class="audit-label">审批结果：</span><div class="audit-control"><div class="radio-group"><label><input type="radio" name="auditResult" value="pass"> 通过</label><label><input type="radio" name="auditResult" value="reject" checked> 不通过</label></div></div></div>
+    <div class="audit-row" id="returnRow"><span class="audit-label">退回节点：</span><div class="audit-control"><select id="returnNode"><option>普查人员填报</option></select></div></div>
+    <div class="audit-row"><span class="audit-label">审批意见：</span><div class="audit-control"><textarea id="auditComment" maxlength="300" placeholder="不通过时必填，最多300字"></textarea><div class="error" id="auditError">不通过时必须填写审批意见</div></div></div>
+  </div><div class="modal-footer"><div></div><div class="modal-footer-actions"><button class="btn" data-close="auditModal">取消</button><button class="btn primary" id="confirmAuditBtn">确定</button></div></div></div></div>
+
+  <script>
+    var stationContexts = {
+      '60218B007': {
+        taskId:'OUT-2026-006', name:'裕华区东南站', code:'60218B007', addr:'石家庄市裕华区东南片区建设南大街368号', dept:'裕华管理部', zone:'裕华片区所', district:'裕华区', office:'建通街道办事处', worker:'周洁', contact:'赵主任', phone:'13800138007',
+        status:'主任审核', statusClass:'status-director-review', role:'管理部主任', avatar:'张', user:'张敏', approvalTitle:'管理部主任审核', auditor:'张敏（主任）', approvalComment:'请完成趸售项目终审。', returnNodes:['管理部专工审核','片区所审核','普查人员填报'], passStatus:'审核通过', passClass:'status-finished'
+      },
+      '60218B013': {
+        taskId:'OUT-2026-108', name:'趸售用户一号站', code:'60218B013', addr:'石家庄市裕华区槐安东路166号', dept:'裕华管理部', zone:'裕华片区所', district:'裕华区', office:'槐底街道办事处', worker:'李明', contact:'周经理', phone:'13900001313',
+        status:'片区所审核', statusClass:'status-zone-review', role:'片区所', avatar:'李', user:'李明', approvalTitle:'片区所审核', auditor:'李明（所长）', approvalComment:'请核对趸售项目及楼栋面积。', returnNodes:['普查人员填报'], passStatus:'专工审核', passClass:'status-dept-review'
+      }
+    };
+    var currentContext = stationContexts['60218B013'];
+    var returnUrl = 'plan-outside-survey-task-worker.html';
+
+    var projects = [
+      { id:'PRJ-2026-001', name:'石家庄市桥西区实验小学项目', addr:'石家庄市桥西区新石中路166号', dept:'桥西管理部', zone:'桥西片区所', district:'桥西区', office:'新石街道办事处', worker:'李明', contact:'王建国', phone:'0311-87654321', unNet:'居民 2 户｜非居民 3 户', summary:'项目建筑物已完成核查。', surveyFile:'实验小学普查明细表.pdf', planFile:'实验小学平面图.pdf', buildings:[
+        {name:'石家庄市桥西区实验小学',floors:'1-2F',usage:'办公',charge:'非居',status:'完成',original:25874.36,current:25874.36,control:'并联',radiator:'地暖',year:'2008年',basis:'建设图纸',file:'核查依据.pdf',remark:'-'}
+      ]},
+      { id:'PRJ-2026-002', name:'卓优教育', addr:'石家庄市桥西区新石中路168号', dept:'桥西管理部', zone:'桥西片区所', district:'桥西区', office:'新石街道办事处', worker:'李明', contact:'赵老师', phone:'13800138002', unNet:'居民 0 户｜非居民 0 户', summary:'主楼及附属楼均已完成普查。', surveyFile:'卓优教育普查明细表.pdf', planFile:'卓优教育平面图.pdf', buildings:[
+        {name:'卓优教育主楼',floors:'1-5F',usage:'商业',charge:'非居',status:'完成',original:45845645.25,current:50000000,control:'并联',radiator:'地暖',year:'2012年',basis:'实测',file:'主楼核查依据.pdf',remark:'-'} ,
+        {name:'卓优教育附属楼',floors:'1-3F',usage:'商业',charge:'非居',status:'完成',original:40000200,current:40000000,control:'并联',radiator:'挂暖',year:'2014年',basis:'房屋测绘报告',file:'附属楼核查依据.pdf',remark:'面积微调'}
+      ]},
+      { id:'PRJ-2026-003', name:'百医堂', addr:'石家庄市桥西区新石中路170号', dept:'桥西管理部', zone:'桥西片区所', district:'桥西区', office:'新石街道办事处', worker:'李明', contact:'刘经理', phone:'13900139003', unNet:'居民 0 户｜非居民 1 户', summary:'现场实测数据已录入。', surveyFile:'百医堂普查明细表.pdf', planFile:'', buildings:[
+        {name:'百医堂',floors:'1F',usage:'商业',charge:'非居',status:'完成',original:78458.41,current:78458.41,control:'并联',radiator:'地暖',year:'2008年',basis:'实测',file:'百医堂核查依据.pdf',remark:'-'}
+      ]}
+    ];
+    function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+    function num(v){var n=parseFloat(v);return isNaN(n)?0:n;}
+    function fmt(v){return Math.round(v*100)/100;}
+    function projectMetrics(p){var original=0,current=0;p.buildings.forEach(function(b){original+=num(b.original);if(b.status==='完成')current+=num(b.current);});return {original:original,current:current,diff:current-original};}
+    function diffClass(v){return v>0?'change-up':(v<0?'change-down':'change-zero');}
+    function renderProjects(){var body=document.getElementById('projectBody');document.getElementById('projectCount').textContent=projects.length;document.getElementById('projectTotal').textContent=projects.length;body.innerHTML=projects.map(function(p,i){var m=projectMetrics(p);return '<tr><td>'+(i+1)+'</td><td><strong>'+esc(p.name)+'</strong></td><td>'+esc(p.addr)+'</td><td>'+p.buildings.length+'</td><td>'+fmt(m.original)+'</td><td>'+fmt(m.current)+'</td><td class="'+diffClass(m.diff)+'">'+fmt(m.diff)+'</td><td><span class="status-tag '+(p.planFile?'status-done':'status-pending')+'">'+(p.planFile?'已上传':'未上传')+'</span></td><td><a class="action-link" data-project="'+esc(p.id)+'">查看</a></td></tr>';}).join('');}
+    function setText(id,value){document.getElementById(id).textContent=fmt(value);}
+    function renderStationStats(){var ref={total:0,home:0,high:0,multi:0,apartment:0,other:0,nonResident:0,nonAgreement:0},cur={total:0,home:0,high:0,multi:0,apartment:0,other:0,nonResident:0,nonAgreement:0};projects.forEach(function(p){p.buildings.forEach(function(b){var rv=num(b.original),cv=b.status==='完成'?num(b.current):0;ref.total+=rv;cur.total+=cv;var home=['高层','多层','公寓'].indexOf(b.charge)>=0;if(home){ref.home+=rv;cur.home+=cv;var key=b.charge==='高层'?'high':(b.charge==='多层'?'multi':'apartment');ref[key]+=rv;cur[key]+=cv;}else{ref.other+=rv;cur.other+=cv;var otherKey=b.charge==='非协'?'nonAgreement':'nonResident';ref[otherKey]+=rv;cur[otherKey]+=cv;}});});['Total','Home','High','Multi','Apartment','Other','NonResident','NonAgreement'].forEach(function(s){var k=s.charAt(0).toLowerCase()+s.slice(1);setText('ref'+s,ref[k]);setText('cur'+s,cur[k]);});}
+    function infoHtml(label,value){return '<div class="info-item"><span class="info-label">'+label+'</span><span class="info-value">'+esc(value||'-')+'</span></div>';}
+    function fileCard(type,name){if(!name)return '<div class="file-card"><span class="file-icon '+(type==='plan'?'image':'')+'">'+(type==='plan'?'IMG':'PDF')+'</span><div class="file-info"><div class="file-name">未上传</div><div class="file-meta">暂无可预览文件</div></div></div>';return '<div class="file-card clickable" data-preview="'+type+'" data-file="'+esc(name)+'"><span class="file-icon '+(type==='plan'?'image':'')+'">'+(type==='plan'?'IMG':'PDF')+'</span><div class="file-info"><div class="file-name">'+esc(name)+'</div><div class="file-meta">已上传 · 点击预览占位</div></div></div>';}
+    function openProject(id){var p=projects.find(function(x){return x.id===id;});if(!p)return;var m=projectMetrics(p);document.getElementById('projectTitle').textContent=p.name+' - 项目详情';document.getElementById('projectInfo').innerHTML=infoHtml('项目名称',p.name)+infoHtml('项目编码',p.id)+infoHtml('用热地址',p.addr)+infoHtml('所属管理部',p.dept)+infoHtml('所属片区所',p.zone)+infoHtml('行政区',p.district)+infoHtml('办事处',p.office)+infoHtml('普查人员',p.worker)+infoHtml('联系人',p.contact)+infoHtml('联系方式',p.phone)+infoHtml('未入网建筑物数量',p.unNet)+infoHtml('项目小结',p.summary);document.getElementById('projectAttachments').innerHTML=fileCard('pdf',p.surveyFile)+fileCard('plan',p.planFile);document.getElementById('projectStats').innerHTML='<div class="metric"><span>建筑物数量</span><strong>'+p.buildings.length+'</strong></div><div class="metric"><span>原面积</span><strong>'+fmt(m.original)+'</strong></div><div class="metric"><span>现普查面积</span><strong>'+fmt(m.current)+'</strong></div><div class="metric"><span>面积变化</span><strong class="'+diffClass(m.diff)+'">'+fmt(m.diff)+'</strong></div>';document.getElementById('buildingBody').innerHTML=p.buildings.map(function(b,i){var diff=b.status==='完成'?num(b.current)-num(b.original):null;var rate=diff===null||!num(b.original)?'—':fmt(diff/num(b.original)*100)+'%';return '<tr><td>'+(i+1)+'</td><td><strong>'+esc(b.name)+'</strong></td><td>'+esc(b.floors)+'</td><td>'+esc(b.usage)+'</td><td>'+esc(b.charge)+'</td><td><span class="status-tag '+(b.status==='完成'?'status-done':'status-pending')+'">'+esc(b.status)+'</span></td><td>'+fmt(num(b.original))+'</td><td>'+(b.status==='完成'?fmt(num(b.current)):'—')+'</td><td class="'+(diff===null?'change-zero':diffClass(diff))+'">'+(diff===null?'—':fmt(diff))+'</td><td class="'+(diff===null?'change-zero':diffClass(diff))+'">'+rate+'</td><td>'+esc(b.control)+'</td><td>'+esc(b.radiator)+'</td><td>'+esc(b.year)+'</td><td>'+esc(b.basis)+'</td><td><a class="action-link" data-preview="pdf" data-file="'+esc(b.file)+'">'+esc(b.file)+'</a></td><td>'+esc(b.remark)+'</td></tr>';}).join('');document.getElementById('projectModal').style.display='flex';document.querySelector('#projectModal .modal-body').scrollTop=0;}
+    function openPreview(type,file){document.getElementById('previewTitle').textContent=file;document.getElementById('previewBody').innerHTML=type==='plan'?'<div class="plan-preview"></div><div class="preview-note">平面图预览占位</div>':'<div class="pdf-page"><div class="pdf-title">面积普查资料</div><div class="pdf-line"></div><div class="pdf-line short"></div><div class="pdf-grid">'+Array(24).fill('<div class="pdf-cell"></div>').join('')+'</div></div><div class="preview-note">PDF 预览占位</div>';document.getElementById('previewModal').style.display='flex';}
+    function closeModal(id){document.getElementById(id).style.display='none';}
+    function getParam(name){var match=location.search.match(new RegExp('[?&]'+name+'=([^&]*)'));return match?decodeURIComponent(match[1]):'';}
+    function renderContext(){
+      var id=getParam('id')||'60218B013';
+      var context=stationContexts[id];
+      if(!context)return null;
+      var source=getParam('source')==='worker'?'worker':'items';
+      returnUrl=source==='worker'?'plan-outside-survey-task-worker.html':'plan-outside-survey-task-items.html';
+      var sourceName=source==='worker'?'我的计划外普查任务':'计划外普查任务';
+      document.getElementById('sourceBreadcrumb').textContent=sourceName;
+      document.getElementById('sourceBreadcrumb').href=returnUrl;
+      document.getElementById('backLink').href=returnUrl;
+      document.getElementById('detailName').textContent=context.name;
+      document.getElementById('taskSubtitle').textContent='任务编号 '+context.taskId+' · 普查原因：趸售用户';
+      document.getElementById('siteName').textContent=context.name;
+      ['Code','Addr','Dept','Zone','District','Office','Worker','Contact','Phone'].forEach(function(suffix){var key=suffix.charAt(0).toLowerCase()+suffix.slice(1);document.getElementById('site'+suffix).textContent=context[key]||'-';});
+      var chip=document.getElementById('statusChip');
+      chip.textContent=context.status;
+      chip.className='status-chip '+context.statusClass;
+      document.getElementById('roleName').textContent=context.role;
+      document.getElementById('roleAvatar').textContent=context.avatar;
+      document.getElementById('roleUser').textContent=context.user;
+      document.getElementById('currentApprovalTitle').textContent=context.approvalTitle;
+      document.getElementById('currentApprovalUser').textContent=context.auditor;
+      document.getElementById('currentApprovalComment').textContent=context.approvalComment;
+      document.title=context.name+' - 趸售用户站点详情 - 面积普查管理系统';
+      return context;
+    }
+    document.querySelector('.menu-parent').addEventListener('click',function(e){e.preventDefault();document.getElementById('menuArrow').classList.toggle('collapsed');document.querySelectorAll('.menu-child').forEach(function(x){x.classList.toggle('menu-collapsed');});});
+    document.getElementById('projectBody').addEventListener('click',function(e){var a=e.target.closest('[data-project]');if(a)openProject(a.getAttribute('data-project'));});
+    document.addEventListener('click',function(e){var close=e.target.closest('[data-close]');if(close)closeModal(close.getAttribute('data-close'));var preview=e.target.closest('[data-preview]');if(preview){e.preventDefault();openPreview(preview.getAttribute('data-preview'),preview.getAttribute('data-file'));}});
+    document.getElementById('backBtn').addEventListener('click',function(){location.href=returnUrl;});
+    document.getElementById('auditBtn').addEventListener('click',function(){document.querySelector('input[name="auditResult"][value="reject"]').checked=true;document.getElementById('returnNode').innerHTML=currentContext.returnNodes.map(function(node){return '<option>'+esc(node)+'</option>';}).join('');document.getElementById('returnRow').style.display='flex';document.getElementById('auditComment').value='';document.getElementById('auditError').classList.remove('show');document.getElementById('auditModal').style.display='flex';});
+    document.querySelectorAll('input[name="auditResult"]').forEach(function(r){r.addEventListener('change',function(){document.getElementById('returnRow').style.display=r.value==='reject'?'flex':'none';document.getElementById('auditError').classList.remove('show');});});
+    document.getElementById('confirmAuditBtn').addEventListener('click',function(){var result=document.querySelector('input[name="auditResult"]:checked').value;var comment=document.getElementById('auditComment').value.trim();if(result==='reject'&&!comment){document.getElementById('auditError').classList.add('show');return;}var returnNode=document.getElementById('returnNode').value;var chip=document.getElementById('statusChip');chip.textContent=result==='pass'?currentContext.passStatus:'已退回';chip.className='status-chip '+(result==='pass'?currentContext.passClass:'status-returned');var item=document.createElement('div');item.className='approval-item '+(result==='pass'?'done':'');item.innerHTML='<div class="ap-head"><strong>'+esc(currentContext.approvalTitle)+'</strong><span>刚刚</span></div><div class="ap-user">'+esc(currentContext.auditor)+'</div><div class="ap-comment">'+esc(result==='pass'?(comment||'审核通过'):('退回至'+returnNode+'。'+comment))+'</div>';document.getElementById('approvalList').insertBefore(item,document.getElementById('approvalList').firstChild);closeModal('auditModal');alert(result==='pass'?'审核通过已提交。':'审核退回已提交。');});
+    currentContext=renderContext();
+    if(!currentContext){
+      document.querySelector('.detail-body').innerHTML='<section class="card page-empty"><strong>未找到趸售用户站点</strong><span>请返回任务列表重新选择趸售用户任务。</span></section>';
+      document.querySelector('.footer-bar').style.display='none';
+    }else{
+      renderProjects();
+      renderStationStats();
+    }
+  </script>
+</body>
+</html>
