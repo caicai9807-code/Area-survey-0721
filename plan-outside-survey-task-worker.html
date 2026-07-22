@@ -22,6 +22,9 @@
 
     .page-left { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; }
 
+    .action-row { gap: 4px; }
+    .action-row .action-link { font-size: 13px; }
+
     /* 状态标签 */
     .status-unassigned { background: #fff7e6; color: #d48806; }
     .status-progress   { background: #e8efff; color: var(--primary); }
@@ -30,6 +33,52 @@
     .status-rejected   { background: #fff2f0; color: var(--danger); }
     .status-finished   { background: #f2f4f8; color: #78849b; }
     .status-withdrawn  { background: #fffbe6; color: #d48806; }
+
+    /* Tabs 普查原因 */
+    .reason-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 20px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+    .reason-tab {
+      position: relative;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .reason-tab .tab-count {
+      margin-left: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .reason-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .reason-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: -1px;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+    .reason-tab:hover { color: var(--primary); }
+
+    .card.no-top-radius {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
   </style>
 </head>
 <body>
@@ -131,7 +180,15 @@
           </div>
         </section>
 
-        <section class="card">
+        <div class="reason-tabs" id="reasonTabs">
+          <div class="reason-tab active" data-reason="all">全部 <span class="tab-count" id="cntAll">0</span></div>
+          <div class="reason-tab" data-reason="面积变化">面积变化 <span class="tab-count" id="cntArea">0</span></div>
+          <div class="reason-tab" data-reason="一管到户">一管到户 <span class="tab-count" id="cntPipe">0</span></div>
+          <div class="reason-tab" data-reason="新开户及增容">新开户及增容 <span class="tab-count" id="cntNew">0</span></div>
+          <div class="reason-tab" data-reason="趸售用户">趸售用户 <span class="tab-count" id="cntDun">0</span></div>
+        </div>
+
+        <section class="card no-top-radius">
           <div class="table-scroll">
             <table>
               <thead>
@@ -144,6 +201,9 @@
                   <th>普查原因</th>
                   <th>管理部</th>
                   <th>任务状态</th>
+                  <th>下发状态</th>
+                  <th>审核状态</th>
+                  <th>最近操作时间</th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -171,16 +231,18 @@
     });
 
     var tasks = [
-      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', assignee: '李明', time: '2026-07-16' },
-      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', assignee: '李明', time: '2026-07-18' },
-      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', assignee: '李明', time: '2026-07-14' },
-      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', assignee: '李明', time: '2026-07-10' },
-      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', assignee: '李明', time: '2026-07-09' },
-      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', assignee: '李明', time: '2026-07-05' },
-      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', assignee: '李明', time: '2026-07-20' }
+      { id: 101, name: '计划外桥西管理部春江花月西站面积变化', code: '60218B001', name2: '春江花月西站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '进行中', distribute: '已下发', audit: '未审核', lastOp: '2026-07-16 09:30', assignee: '李明', time: '2026-07-16' },
+      { id: 102, name: '计划外裕华管理部万达站面积变化', code: '60218B004', name2: '裕华区万达站', type: '用户站', reason: '面积变化', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', distribute: '已下发', audit: '片区审核通过', lastOp: '2026-07-18 14:20', assignee: '李明', time: '2026-07-18' },
+      { id: 103, name: '计划外长安区东站一管到户', code: '60218B002', name2: '长安区东站', type: '用户站', reason: '一管到户', dept: '长安管理部', zone: '长安片区所', status: '进行中（已撤回）', distribute: '已下发', audit: '退回修改中', lastOp: '2026-07-15 11:00', assignee: '李明', time: '2026-07-14' },
+      { id: 104, name: '计划外桥西区中心站新开户', code: '60218B009', name2: '桥西区中心站', type: '用户站', reason: '新开户及增容', dept: '桥西管理部', zone: '桥西片区所', status: '站长审核', distribute: '已下发', audit: '片区审核中', lastOp: '2026-07-10 16:30', assignee: '李明', time: '2026-07-10' },
+      { id: 105, name: '计划外裕华区北站一管到户', code: '60218B010', name2: '裕华区北站', type: '自管站', reason: '一管到户', dept: '裕华管理部', zone: '裕华片区所', status: '已退回', distribute: '已下发', audit: '退回修改中', lastOp: '2026-07-09 10:45', assignee: '李明', time: '2026-07-09' },
+      { id: 106, name: '计划外桥西区东站面积变化', code: '60218B012', name2: '桥西区东站', type: '自管站', reason: '面积变化', dept: '桥西管理部', zone: '桥西片区所', status: '已完成', distribute: '已下发', audit: '管理部审核通过', lastOp: '2026-07-05 17:00', assignee: '李明', time: '2026-07-05' },
+      { id: 107, name: '计划外长安区中心站新开户', code: '60218B011', name2: '长安区中心站', type: '用户站', reason: '新开户及增容', dept: '长安管理部', zone: '长安片区所', status: '进行中', distribute: '已下发', audit: '未审核', lastOp: '2026-07-20 08:30', assignee: '李明', time: '2026-07-20' },
+      { id: 108, name: '计划外裕华区趸售用户一号站', code: '60218B013', name2: '趸售用户一号站', type: '自管站', reason: '趸售用户', dept: '裕华管理部', zone: '裕华片区所', status: '进行中', distribute: '已下发', audit: '未审核', lastOp: '2026-07-22 10:15', assignee: '李明', time: '2026-07-22' }
     ];
     var pageSize = 10;
     var currentPage = 1;
+    var currentTab = 'all';
 
     function esc(s) { return String(s).replace(/[&<>'"]/g, function(c) { return { '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[c]; }); }
     function typeTag(t) { return '<span class="tag ' + (t === '用户站' ? 'tag-user-station' : 'tag-self-station') + '">' + t + '</span>'; }
@@ -198,6 +260,7 @@
       var start = document.getElementById('filterStart').value;
       var end = document.getElementById('filterEnd').value;
       return tasks.filter(function(t) {
+        if (currentTab !== 'all' && t.reason !== currentTab) return false;
         if (code && t.code.toLowerCase().indexOf(code) === -1) return false;
         if (name && t.name2.toLowerCase().indexOf(name) === -1) return false;
         if (type && t.type !== type) return false;
@@ -208,13 +271,23 @@
       });
     }
 
+    function updateTabCounts() {
+      document.getElementById('cntAll').textContent = tasks.length;
+      document.getElementById('cntArea').textContent = tasks.filter(function(t) { return t.reason === '面积变化'; }).length;
+      document.getElementById('cntPipe').textContent = tasks.filter(function(t) { return t.reason === '一管到户'; }).length;
+      document.getElementById('cntNew').textContent = tasks.filter(function(t) { return t.reason === '新开户及增容'; }).length;
+      document.getElementById('cntDun').textContent = tasks.filter(function(t) { return t.reason === '趸售用户'; }).length;
+    }
+
     function renderOps(t) {
       var s = t.status;
+      var sep = '<span style="color:#d5deed;margin:0 1px;">|</span>';
       if (s === '进行中' || s === '进行中（已撤回）' || s === '已退回') {
-        return '<a class="action-link" href="#">填报/导入</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#">暂存</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#" data-op="report" data-id="' + t.id + '">上报</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
+        var fillPage = t.reason === '趸售用户' ? 'plan-outside-survey-task-dh-fill.html' : (t.type === '用户站' ? 'plan-outside-survey-task-user-fill.html' : 'plan-outside-survey-task-self-fill.html');
+        return '<a class="action-link" href="' + fillPage + '?id=' + encodeURIComponent(t.code) + '">填报</a>' + sep + '<a class="action-link" href="#" data-op="report" data-id="' + t.id + '">上报</a>' + sep + '<a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
       }
       if (s === '站长审核') {
-        return '<a class="action-link" href="#">查看</a><span style="color:#d5deed;margin:0 4px;">|</span><a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
+        return '<a class="action-link" href="#">查看</a>' + sep + '<a class="action-link" href="#" data-op="withdraw" data-id="' + t.id + '">撤回</a>';
       }
       if (s === '已完成') {
         return '<a class="action-link" href="#">查看</a>';
@@ -241,11 +314,14 @@
             '<td>' + esc(t.reason) + '</td>' +
             '<td>' + esc(t.dept) + '</td>' +
             '<td>' + statusTag(t.status) + '</td>' +
+            '<td>' + esc(t.distribute || '-') + '</td>' +
+            '<td>' + esc(t.audit || '-') + '</td>' +
+            '<td>' + esc(t.lastOp || '-') + '</td>' +
             '<td><div class="action-row">' + renderOps(t) + '</div></td>' +
             '</tr>';
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:60px 0;">暂无任务</td></tr>';
       }
 
       var box = document.getElementById('pageBox');
@@ -256,6 +332,17 @@
       html += '<button class="page-btn text" ' + (currentPage === totalPages ? 'disabled' : '') + ' data-page="' + (currentPage + 1) + '">下一页</button>';
       box.innerHTML = html;
     }
+
+    // Tabs 切换
+    document.getElementById('reasonTabs').addEventListener('click', function(e) {
+      var tab = e.target.closest('.reason-tab');
+      if (!tab) return;
+      document.querySelectorAll('.reason-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentTab = tab.getAttribute('data-reason');
+      currentPage = 1;
+      render();
+    });
 
     // 筛选/重置
     document.getElementById('doSearch').addEventListener('click', function() { currentPage = 1; render(); });
@@ -297,6 +384,7 @@
       }
     });
 
+    updateTabCounts();
     render();
   </script>
 </body>

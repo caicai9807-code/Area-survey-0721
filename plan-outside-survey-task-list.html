@@ -175,7 +175,8 @@
                 <tr>
                   <th>序号</th><th>任务名称</th><th>普查原因</th><th>站点数</th>
                   <th>所属管理部</th><th>开始时间</th><th>结束时间</th>
-                  <th>任务完成统计</th><th>有面积变化站点数</th><th>任务状态</th>
+                  <th>任务完成统计</th><th>有面积变化站点数</th>                  <th>任务状态</th>
+                  <th>审核状态</th><th>最近操作时间</th>
                   <th>创建人</th><th>操作</th>
                 </tr>
               </thead>
@@ -193,18 +194,18 @@
 
   <script>
     const tasks = [
-      { id:'OUT-2026-002', name:'2026年楼安路片区面积变化调…', reason:'面积变化', sites:6, dept:'桥西管理部', start:'2026-07-18', end:'2026-07-31', done:0, changed:2, status:'进行中', creator:'张' },
-      { id:'OUT-2026-003', name:'裕华东路用户一管到户审查', reason:'一管到户', sites:4, dept:'裕华管理部', start:'2026-07-16', end:'2026-08-08', done:0, changed:0, status:'待分配', creator:'孙' },
-      { id:'OUT-2026-004', name:'裕华区新建项目开户面积核查', reason:'新开户及增容', sites:5, dept:'裕华管理部', start:'2026-07-12', end:'2026-07-28', done:0, changed:1, status:'片区所审核', creator:'张' },
-      { id:'OUT-2026-005', name:'长安区延售用户项目集中审查', reason:'趸售用户', sites:3, dept:'长安管理部', start:'2026-07-09', end:'2026-08-20', done:0, changed:1, status:'管理部审核', creator:'陈' },
-      { id:'OUT-2026-006', name:'桥西区新增用热户面积核查', reason:'新开户及增容', sites:7, dept:'桥西管理部', start:'2026-07-14', end:'2026-08-14', done:2, changed:0, status:'待分配', creator:'李' },
-      { id:'OUT-2026-007', name:'裕华东路片区面积异动核查', reason:'面积变化', sites:3, dept:'裕华管理部', start:'2026-06-20', end:'2026-07-10', done:3, changed:2, status:'片区所审核', creator:'王' },
-      { id:'OUT-2026-008', name:'长安路片区供热关系调整核查', reason:'一管到户', sites:6, dept:'长安管理部', start:'2026-07-01', end:'2026-07-25', done:2, changed:1, status:'进行中', creator:'刘' },
-      { id:'OUT-2026-009', name:'桥西区供暖管网接入普查', reason:'新开户及增容', sites:8, dept:'桥西管理部', start:'2026-07-05', end:'2026-08-05', done:0, changed:0, status:'待分配', creator:'赵' },
-      { id:'OUT-2026-010', name:'裕华区用户面积延审项目', reason:'趸售用户', sites:2, dept:'裕华管理部', start:'2026-07-08', end:'2026-07-22', done:0, changed:0, status:'片区所审核', creator:'周' },
-      { id:'OUT-2026-011', name:'长安区新建安置房面积核查', reason:'新开户及增容', sites:5, dept:'长安管理部', start:'2026-07-10', end:'2026-08-01', done:0, changed:0, status:'待分配', creator:'孙' },
-      { id:'OUT-2026-012', name:'桥西区老旧管网改造面积', reason:'面积变化', sites:9, dept:'桥西管理部', start:'2026-06-15', end:'2026-07-05', done:9, changed:6, status:'管理部审核', creator:'陈' },
-      { id:'OUT-2026-013', name:'裕华东路二期面积核查', reason:'趸售用户', sites:4, dept:'裕华管理部', start:'2026-07-11', end:'2026-07-31', done:1, changed:0, status:'进行中', creator:'张' }
+      { id:'OUT-2026-002', name:'2026年楼安路片区面积变化调…', reason:'面积变化', sites:6, dept:'桥西管理部', start:'2026-07-18', end:'2026-07-31', done:0, changed:2, status:'进行中', distribute:'已下发', audit:'未审核', lastOp:'2026-07-18 14:30', creator:'张' },
+      { id:'OUT-2026-003', name:'裕华东路用户一管到户审查', reason:'一管到户', sites:4, dept:'裕华管理部', start:'2026-07-16', end:'2026-08-08', done:0, changed:0, status:'待分配', distribute:'未下发', audit:'未审核', lastOp:'2026-07-16 09:15', creator:'孙' },
+      { id:'OUT-2026-004', name:'裕华区新建项目开户面积核查', reason:'新开户及增容', sites:5, dept:'裕华管理部', start:'2026-07-12', end:'2026-07-28', done:0, changed:1, status:'片区所审核', distribute:'已下发', audit:'片区审核中', lastOp:'2026-07-15 16:20', creator:'张' },
+      { id:'OUT-2026-005', name:'长安区延售用户项目集中审查', reason:'趸售用户', sites:3, dept:'长安管理部', start:'2026-07-09', end:'2026-08-20', done:0, changed:1, status:'管理部审核', distribute:'已下发', audit:'管理部审核中', lastOp:'2026-07-14 10:05', creator:'陈' },
+      { id:'OUT-2026-006', name:'桥西区新增用热户面积核查', reason:'新开户及增容', sites:7, dept:'桥西管理部', start:'2026-07-14', end:'2026-08-14', done:2, changed:0, status:'待分配', distribute:'未下发', audit:'未审核', lastOp:'2026-07-14 11:30', creator:'李' },
+      { id:'OUT-2026-007', name:'裕华东路片区面积异动核查', reason:'面积变化', sites:3, dept:'裕华管理部', start:'2026-06-20', end:'2026-07-10', done:3, changed:2, status:'片区所审核', distribute:'已下发', audit:'片区审核通过', lastOp:'2026-07-10 17:45', creator:'王' },
+      { id:'OUT-2026-008', name:'长安路片区供热关系调整核查', reason:'一管到户', sites:6, dept:'长安管理部', start:'2026-07-01', end:'2026-07-25', done:2, changed:1, status:'进行中', distribute:'已下发', audit:'未审核', lastOp:'2026-07-20 08:50', creator:'刘' },
+      { id:'OUT-2026-009', name:'桥西区供暖管网接入普查', reason:'新开户及增容', sites:8, dept:'桥西管理部', start:'2026-07-05', end:'2026-08-05', done:0, changed:0, status:'待分配', distribute:'未下发', audit:'未审核', lastOp:'2026-07-05 14:20', creator:'赵' },
+      { id:'OUT-2026-010', name:'裕华区用户面积延审项目', reason:'趸售用户', sites:2, dept:'裕华管理部', start:'2026-07-08', end:'2026-07-22', done:0, changed:0, status:'片区所审核', distribute:'已下发', audit:'片区审核中', lastOp:'2026-07-12 15:30', creator:'周' },
+      { id:'OUT-2026-011', name:'长安区新建安置房面积核查', reason:'新开户及增容', sites:5, dept:'长安管理部', start:'2026-07-10', end:'2026-08-01', done:0, changed:0, status:'待分配', distribute:'未下发', audit:'未审核', lastOp:'2026-07-10 10:00', creator:'孙' },
+      { id:'OUT-2026-012', name:'桥西区老旧管网改造面积', reason:'面积变化', sites:9, dept:'桥西管理部', start:'2026-06-15', end:'2026-07-05', done:9, changed:6, status:'管理部审核', distribute:'已下发', audit:'管理部审核通过', lastOp:'2026-07-05 16:00', creator:'陈' },
+      { id:'OUT-2026-013', name:'裕华东路二期面积核查', reason:'趸售用户', sites:4, dept:'裕华管理部', start:'2026-07-11', end:'2026-07-31', done:1, changed:0, status:'进行中', distribute:'已下发', audit:'未审核', lastOp:'2026-07-19 11:25', creator:'张' }
     ];
 
     const pageSize = 5;
@@ -253,12 +254,14 @@
             '<td><div class="progress-wrap"><div class="progress-text"><span>' + t.done + ' / ' + t.sites + '</span><span>' + rate + '%</span></div><div class="progress-track"><div class="progress-bar ' + barClass + '" style="width:' + rate + '%"></div></div></div></td>' +
             '<td>' + t.changed + '</td>' +
             '<td>' + statusTag + '</td>' +
+            '<td>' + esc(t.audit || '-') + '</td>' +
+            '<td>' + esc(t.lastOp || '-') + '</td>' +
             '<td>' + esc(t.creator) + '</td>' +
             '<td><div class="action-row"><a class="action-link" href="plan-outside-survey-task-detail.html?id=' + encodeURIComponent(t.id) + '">详情</a><a class="action-link" href="plan-outside-survey-task-edit.html?id=' + encodeURIComponent(t.id) + '">编辑</a></div></td>' +
             '</tr>';
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="12"><div class="empty-state"><span class="empty-icon">&#x2315;</span>暂无匹配任务，请调整筛选条件后重试。</div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="14"><div class="empty-state"><span class="empty-icon">&#x2315;</span>暂无匹配任务，请调整筛选条件后重试。</div></td></tr>';
       }
 
       var box = document.getElementById('paginationBox');

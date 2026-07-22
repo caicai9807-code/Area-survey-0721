@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>计划外普查数据填报 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .page-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 13px; margin-bottom: 12px; cursor: pointer; }
+    .back-link:hover { color: var(--primary); }
+
+    .page-title-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 16px; }
+    .page-title-main { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .reason-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; background: #f5f7fb; color: #66748c; font-size: 12px; font-weight: 500; margin-left: 8px; vertical-align: middle; }
+
+    /* 顶部双卡：站点信息 + 附件上传 */
+    .top-row { display: grid; grid-template-columns: 1fr 280px; gap: 16px; margin-bottom: 16px; }
+    .site-info-card { padding: 18px 20px; }
+    .site-info-card .site-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+    .site-name-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .site-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 18px; }
+    .site-info-grid .si-item { display: flex; flex-direction: row; align-items: baseline; gap: 4px; min-width: 0; }
+    .site-info-grid .si-label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .site-info-grid .si-label::after { content: "："; }
+    .site-info-grid .si-value { color: var(--text); font-size: 13px; word-break: break-all; }
+    .si-inline-field { display: inline-flex; align-items: center; gap: 4px; }
+    .si-inline-sep { color: #d5deed; margin: 0 8px; }
+    .si-mini-input { width: 48px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; font-size: 12px; text-align: center; color: var(--text); background: #fff; }
+    .si-mini-input:focus { outline: none; border-color: var(--primary); background: #fff; }
+    .si-summary .si-value { color: var(--text-2); font-size: 12px; line-height: 1.6; }
+
+    /* 添加楼栋：上传控件 */
+    .bd-upload { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: #fff; color: var(--text-2); font-size: 13px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .bd-upload:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .bd-upload-icon { color: var(--muted); font-size: 14px; }
+    .bd-upload-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .form-row textarea.se-input { resize: vertical; min-height: 60px; font-family: inherit; }
+
+    /* 楼栋表格：状态、变化值、附件、操作 */
+    .bd-status-done { color: var(--success); background: var(--success-soft); }
+    .bd-status-pending { color: var(--primary); background: var(--primary-soft); }
+    .bd-change-up { color: var(--success); font-weight: 600; }
+    .bd-change-down { color: var(--danger); font-weight: 600; }
+    .bd-change-zero { color: var(--muted); }
+    .bd-file-link { color: var(--primary); text-decoration: none; }
+    .bd-file-link:hover { text-decoration: underline; }
+    .bd-ops { display: flex; gap: 4px; flex-wrap: nowrap; }
+    .bd-ops a { color: var(--primary); font-size: 12px; cursor: pointer; }
+    .bd-ops a:hover { text-decoration: underline; }
+    .bd-ops .danger { color: var(--danger); }
+    .bd-ops .sep { color: #d5deed; }
+
+    /* 普查小结弹窗 */
+    .summary-section { padding-top: 6px; }
+    .summary-section + .summary-section { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .summary-section-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+    .summary-add-row {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px; border: 1px dashed var(--primary); border-radius: var(--radius-sm);
+      color: var(--primary); font-size: 13px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .summary-add-row:hover { background: var(--primary-soft); }
+    .ch-group { position: relative; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fafbfc; margin-bottom: 12px; }
+    .ch-group .ch-remove { position: absolute; top: 6px; right: 8px; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; }
+    .ch-group .ch-remove:hover { color: var(--danger); }
+    .unnet-detail-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+    .unnet-detail-row + .unnet-detail-row { margin-top: 0; }
+    .unnet-detail-row .field { display: flex; flex-direction: column; gap: 4px; }
+    .unnet-detail-row .field label { font-size: 12px; color: var(--muted); }
+    .unnet-detail-row .field label .req { color: var(--danger); }
+    .unnet-detail-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fafbfc; margin-bottom: 10px; position: relative; }
+    .unnet-detail-item .remove-btn { position: absolute; top: 6px; right: 8px; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; }
+    .unnet-detail-item .remove-btn:hover { color: var(--danger); }
+    .form-row .field label { color: var(--text-2); font-size: 13px; }
+
+    /* 上传门头图/平面图 */
+    .upload-cloud-area { border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 40px 20px; text-align: center; background: #fafbfc; }
+    .upload-cloud-text { font-size: 14px; color: var(--text); margin-bottom: 6px; }
+    .upload-cloud-text a { color: var(--primary); text-decoration: none; }
+    .upload-cloud-hint { font-size: 12px; color: var(--muted); }
+    .upload-file-info { margin-top: 14px; }
+    .upload-file-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 4px; }
+    .upload-file-name { font-size: 14px; color: var(--text); }
+    .upload-file-remove { color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 6px; }
+    .upload-file-remove:hover { color: var(--danger); }
+    .upload-progress { height: 4px; background: var(--success-soft); border-radius: 2px; overflow: hidden; }
+    .upload-progress-bar { width: 100%; height: 100%; background: var(--success); border-radius: inherit; }
+
+    .attach-card { padding: 16px 18px; }
+    .attach-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .attach-edit-btn { font-size: 12px; color: var(--primary); cursor: pointer; padding: 2px 6px; border-radius: 3px; }
+    .attach-edit-btn:hover { background: var(--primary-soft); }
+    .attach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .attach-upload {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      height: 78px; border: 1px dashed var(--border); border-radius: var(--radius-sm);
+      background: #fafbfc; color: var(--text-2); font-size: 12px; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .attach-upload:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .attach-upload .attach-icon { font-size: 18px; color: var(--muted); }
+
+    /* 统计卡片 */
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .stat-card { padding: 14px 18px; }
+    .stat-card .stat-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; }
+    .stat-card .stat-head .stat-label { color: var(--text-2); font-size: 13px; }
+    .stat-card .stat-head .stat-value { font-size: 22px; font-weight: 700; color: var(--text); }
+    .stat-card .stat-head .stat-value.muted { color: var(--muted-2); }
+    .stat-sub-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; padding: 8px 0; border-top: 1px dashed var(--border); }
+    .stat-sub-row.row-4col { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
+    .stat-sub-row.row-3col { grid-template-columns: 1.4fr 1fr 1fr; }
+    .stat-sub { display: flex; align-items: baseline; justify-content: space-between; padding: 0 6px; }
+    .stat-sub + .stat-sub { border-left: 1px dashed var(--border); }
+    .stat-sub .ss-label { color: var(--text-2); font-size: 12px; }
+    .stat-sub .ss-value { font-weight: 600; font-size: 14px; color: var(--text); }
+    .stat-card.soft { background: linear-gradient(180deg, #f0f5ff 0%, #ffffff 100%); }
+
+    /* 楼栋表格 */
+    .building-card .card-header { display: flex; align-items: center; justify-content: space-between; }
+    .building-table th, .building-table td { padding: 10px 12px; }
+    .building-table th { font-size: 12px; color: var(--text-2); background: #fafbfc; }
+
+    .empty-state {
+      padding: 48px 20px; text-align: center; color: var(--muted);
+    }
+    .empty-state .empty-icon { display: block; margin: 0 auto 14px; width: 56px; height: 56px; color: var(--muted-2); }
+    .empty-state .empty-text { font-size: 13px; margin-bottom: 14px; }
+
+    /* 底部固定操作栏 */
+    .footer-bar {
+      position: sticky; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid var(--border);
+      padding: 12px 24px; margin-top: 20px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+      z-index: 50;
+    }
+    .footer-bar .footer-left { margin-right: auto; color: var(--muted); font-size: 12px; }
+
+    /* 模态：导入 */
+    .upload-area {
+      border: 1px dashed #4c78f5; border-radius: var(--radius-md);
+      padding: 50px 24px; text-align: center; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .upload-area:hover { background: #f0f5ff; }
+    .upload-area .upload-icon { display: block; margin: 0 auto 14px; width: 56px; height: 56px; color: var(--primary); }
+    .upload-area .upload-text { font-size: 14px; color: var(--text); margin-bottom: 4px; }
+    .upload-area .upload-hint { font-size: 12px; color: var(--muted); }
+    .upload-area .upload-template { margin-top: 18px; font-size: 13px; color: var(--primary); }
+
+    /* 统一弹窗 */
+    .modal-unified { width: 720px; }
+    .modal-unified .modal-header { padding: 18px 28px; border-bottom: 1px solid var(--border); }
+    .modal-unified .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-unified .modal-body { padding: 24px 28px; }
+    .modal-unified .modal-close { font-size: 20px; color: #999; }
+    .unified-input, .se-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; height: 38px; background: #fff; color: var(--text); box-sizing: border-box; }
+    .unified-input:focus, .se-input:focus { outline: none; border-color: var(--primary); }
+    select.se-input, select.unified-input { appearance: auto; }
+    textarea.se-input, textarea.unified-input { height: auto; min-height: 80px; padding: 10px 12px; font-family: inherit; resize: vertical; }
+
+    /* 模态：站点编辑 */
+    #siteEditModal .modal { width: 720px; }
+    #siteEditModal .modal-header { padding: 18px 28px; border-bottom: 1px solid var(--border); }
+    #siteEditModal .modal-title { font-size: 18px; font-weight: 600; }
+    #siteEditModal .modal-body { padding: 24px 28px; }
+    .site-edit-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; row-gap: 18px; }
+    .site-edit-grid .se-field { display: flex; flex-direction: column; gap: 6px; }
+    .site-edit-grid .se-label { font-size: 13px; color: var(--muted); }
+    .site-edit-grid .se-value { font-size: 14px; color: var(--text); padding: 10px 12px; line-height: 1.4; }
+    .se-full { grid-column: span 2; }
+
+    /* 自管站操作 */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-bottom: 14px; }
+    .form-row .field { display: flex; flex-direction: column; gap: 4px; }
+    .form-row .field label { color: var(--text-2); font-size: 13px; }
+    .form-row .field label .req { color: var(--danger); margin-right: 2px; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">&#x25A6;</div>
+        <span>面积普查管理系统</span>
+        <span class="chip" style="background:rgba(255,255,255,0.15);font-weight:600;">原型环境</span>
+      </div>
+      <div class="top-actions">
+        <div class="top-dropdown">
+          <span class="top-label">演示身份:</span> 普查员 <span style="font-size:10px;margin-left:2px;">&#x25BC;</span>
+        </div>
+        <div class="avatar">李</div>
+        <span>李明</span>
+      </div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false">
+            <span class="menu-icon">&#x25A3;</span> 计划外面积普查
+            <span class="menu-arrow" id="menuArrow">&#x25B2;</span>
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务管理
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-items.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 我的计划外普查任务
+          </a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb">
+          <a href="plan-outside-survey-task-worker.html">我的计划外普查任务</a>
+          <span>/</span>
+          <span>填报</span>
+        </nav>
+
+        <a class="back-link" href="plan-outside-survey-task-worker.html" id="backLink">&#x2190; 返回任务列表</a>
+
+        <div class="page-title-row">
+          <div>
+            <div class="page-title-main">计划外普查数据填报 <span class="reason-chip" id="reasonChip">普查原因：面积变化</span></div>
+            <p class="page-subtitle">添加或导入楼栋/建筑物数据，填写完成后可暂存或上报至站长审核</p>
+          </div>
+        </div>
+
+        <!-- 顶部：站点信息 + 附件上传 -->
+        <div class="top-row">
+          <section class="card site-info-card">
+            <div class="site-name-row">
+              <span class="site-name" id="siteName">春江花月西站</span>
+              <a class="attach-edit-btn" id="siteEditBtn">编辑</a>
+            </div>
+            <div class="site-info-grid">
+              <div class="si-item"><span class="si-label">换热站编码</span><span class="si-value" id="siteCode">60218B001</span></div>
+              <div class="si-item"><span class="si-label">用热地址</span><span class="si-value" id="siteAddr">石家庄市桥西区新石中路166号</span></div>
+              <div class="si-item"><span class="si-label">所属管理部</span><span class="si-value" id="siteDept">桥西管理部</span></div>
+              <div class="si-item"><span class="si-label">所属片区所</span><span class="si-value" id="siteZone">桥西管理部</span></div>
+              <div class="si-item"><span class="si-label">行政区</span><span class="si-value" id="siteDistrict">桥西区</span></div>
+              <div class="si-item"><span class="si-label">办事处</span><span class="si-value" id="siteOffice">新石街道办事处</span></div>
+              <div class="si-item" style="grid-column: span 2;"><span class="si-label">普查人员</span><span class="si-value" id="siteWorker">张三、李晨晨</span></div>
+              <div class="si-item"><span class="si-label">联系人</span><span class="si-value" id="siteContact">-</span></div>
+              <div class="si-item"><span class="si-label">联系方式</span><span class="si-value" id="sitePhone">-</span></div>
+              <div class="si-item" style="grid-column: span 4;">
+                <span class="si-label">未入网建筑物数量</span>
+                <span class="si-value" id="siteUnNetValue">
+                  <span class="si-inline-field">居民 2 户</span>
+                  <span class="si-inline-sep">|</span>
+                  <span class="si-inline-field">非居民 3 户</span>
+                </span>
+              </div>
+              <div class="si-item si-summary" style="grid-column: span 4;">
+                <span class="si-label">站点小结</span>
+                <span class="si-value" id="siteSummary">除本表所示建筑物外，其余建筑物均不参加集中供热，填写未参加集中供热建筑物名称及明细；未参加集中供热，不含在面积表内。</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card attach-card">
+            <div class="attach-title">附件上传</div>
+            <div class="attach-grid">
+              <div class="attach-upload" id="uploadFrontBtn">
+                <span class="attach-icon">&#x2191;</span>
+                <span>上传门头照</span>
+              </div>
+              <div class="attach-upload" id="uploadPlanBtn">
+                <span class="attach-icon">&#x2191;</span>
+                <span>上传平面图</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stat-row">
+          <section class="card stat-card">
+            <div class="stat-head">
+              <span class="stat-label">任务总面积（参考）</span>
+              <span class="stat-value muted" id="refTotal">0</span>
+            </div>
+            <div class="stat-sub-row row-4col">
+              <div class="stat-sub"><span class="ss-label">住宅面积</span><span class="ss-value" id="refHome">0</span></div>
+              <div class="stat-sub"><span class="ss-label">高层</span><span class="ss-value" id="refLayer1">0</span></div>
+              <div class="stat-sub"><span class="ss-label">多层</span><span class="ss-value" id="refLayer2">0</span></div>
+              <div class="stat-sub"><span class="ss-label">公寓</span><span class="ss-value" id="refLayer3">0</span></div>
+            </div>
+            <div class="stat-sub-row row-3col">
+              <div class="stat-sub"><span class="ss-label">非住宅</span><span class="ss-value" id="refOther">0</span></div>
+              <div class="stat-sub"><span class="ss-label">非居</span><span class="ss-value" id="refLayer4">0</span></div>
+              <div class="stat-sub"><span class="ss-label">非协</span><span class="ss-value" id="refLayer5">0</span></div>
+            </div>
+          </section>
+
+          <section class="card stat-card soft">
+            <div class="stat-head">
+              <span class="stat-label">本次填报面积</span>
+              <span class="stat-value" id="curTotal">0</span>
+            </div>
+            <div class="stat-sub-row row-4col">
+              <div class="stat-sub"><span class="ss-label">住宅面积</span><span class="ss-value" id="curHome">0</span></div>
+              <div class="stat-sub"><span class="ss-label">高层</span><span class="ss-value" id="curLayer1">0</span></div>
+              <div class="stat-sub"><span class="ss-label">多层</span><span class="ss-value" id="curLayer2">0</span></div>
+              <div class="stat-sub"><span class="ss-label">公寓</span><span class="ss-value" id="curLayer3">0</span></div>
+            </div>
+            <div class="stat-sub-row row-3col">
+              <div class="stat-sub"><span class="ss-label">非住宅</span><span class="ss-value" id="curOther">0</span></div>
+              <div class="stat-sub"><span class="ss-label">非居</span><span class="ss-value" id="curLayer4">0</span></div>
+              <div class="stat-sub"><span class="ss-label">非协</span><span class="ss-value" id="curLayer5">0</span></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- 楼栋表格 -->
+        <section class="card building-card">
+          <div class="card-header">
+            <div class="card-title">楼栋/建筑物数据 <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:8px;">(共 <span id="bdCount">0</span> 条)</span></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn" id="importBtn">导入数据</button>
+              <button class="btn" id="exportBtn">导出普查明细表</button>
+              <button class="btn" id="summaryBtn">+ 添加普查小结</button>
+              <button class="btn primary" id="addBdBtn">+ 添加楼栋或建筑物</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="building-table">
+              <thead>
+                <tr>
+                  <th style="width:40px;"><input type="checkbox" id="checkAll" disabled></th>
+                  <th style="width:50px;">序号</th>
+                  <th>楼号或建筑物名称</th>
+                  <th style="width:70px;">层数</th>
+                  <th>用热性质</th>
+                  <th>收费类别</th>
+                  <th style="width:90px;">普查状态</th>
+                  <th>原普查楼面面积(m²)</th>
+                  <th>现普查楼面面积(m²)</th>
+                  <th>现较原面积变化(m²)</th>
+                  <th>变化率</th>
+                  <th>控制方式</th>
+                  <th>暖气类型</th>
+                  <th>建筑物年代</th>
+                  <th>普查依据</th>
+                  <th>附件</th>
+                  <th>备注</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="bdBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 底部固定操作栏 -->
+        <div class="footer-bar">
+          <div class="footer-left">提示：「暂存」可继续修改；「上报」后进入站长审核，审核前可撤回</div>
+          <button class="btn" id="cancelBtn">取消</button>
+          <button class="btn" id="saveDraftBtn" style="background:#faad14;color:#fff;border-color:#faad14;">暂存</button>
+          <button class="btn primary" id="submitBtn">上报</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 录入变更弹窗 -->
+  <div class="modal-overlay" id="changeModal" style="display:none;">
+    <div class="modal modal-unified">
+      <div class="modal-header">
+        <div class="modal-title">录入变更</div>
+        <button class="modal-close" id="closeChangeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="chList">
+          <div class="ch-group" data-idx="0">
+            <div class="form-row">
+              <div class="field"><label><span class="req">*</span>热费卡号</label><input class="se-input ch-card" type="text" placeholder="请输入热费卡号"></div>
+              <div class="field"><label><span class="req">*</span>普查面积 (m²)</label><input class="se-input ch-area" type="text" placeholder="请输入普查面积"></div>
+              <div class="field"><label><span class="req">*</span>核查依据</label><select class="se-input ch-basis"><option value="">请选择核查依据</option><option>房产证</option><option>确权书</option><option>实测</option><option>预测绘</option><option>收费明细</option><option>购房合同</option><option>廉租协议</option><option>产权面积认定书</option><option>房屋测绘报告</option><option>居委全面积证明表</option><option>移交明细</option><option>宗地图</option><option>建筑图</option><option>买卖合同</option></select></div>
+              <div class="field">
+                <label><span class="req">*</span>上传普查依据</label>
+                <div class="bd-upload ch-upload">
+                  <span class="bd-upload-icon">&#x1F4CE;</span>
+                  <span>上传文件</span>
+                  <input type="file" class="ch-file" accept=".rar,.zip,.pdf" style="display:none;">
+                </div>
+                <div class="bd-upload-hint">支持格式：.rar .zip .pdf ，单个文件不能超过20MB</div>
+              </div>
+              <div class="field" style="grid-column: span 2;"><label>备注</label><textarea class="se-input ch-remark" rows="3" placeholder="输入内容"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <div class="summary-add-row" id="chAddRow">+ 添加</div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelChangeBtn">取消</button>
+          <button class="btn primary" id="confirmChangeBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上传门头照/平面图弹窗 -->
+  <div class="modal-overlay" id="uploadModal" style="display:none;">
+    <div class="modal modal-unified">
+      <div class="modal-header">
+        <div class="modal-title" id="uploadTitle">上传门头图</div>
+        <button class="modal-close" id="closeUploadModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-cloud-area" id="uploadCloudArea">
+          <svg viewBox="0 0 24 24" fill="none" style="width:64px;height:64px;color:#b8bfc9;margin:0 auto 14px;display:block;">
+            <path d="M7 16C4.79 16 3 14.21 3 12C3 9.79 4.79 8 7 8C7.05 8 7.09 8 7.14 8C7.41 5.55 9.51 3.7 12.05 3.7C14.59 3.7 16.7 5.55 16.96 8.05C19.18 8.13 21 9.99 21 12.24C21 14.43 19.21 16.24 17 16.24" stroke="currentColor" stroke-width="1.5" fill="#d5dbe5"/>
+            <path d="M12 11V20M9 14L12 11L15 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <div class="upload-cloud-text">将文件拖到此处或<a href="#" id="uploadCloudLink">点击上传</a></div>
+          <div class="upload-cloud-hint">支持上传 pdf 格式文件，单个文件不能超过 20MB</div>
+          <input type="file" id="uploadCloudFile" accept=".pdf" style="display:none;">
+        </div>
+        <div class="upload-file-info" id="uploadFileInfo" style="display:none;">
+          <div class="upload-file-row">
+            <span class="upload-file-name" id="uploadFileName">📄 文件名称.PDF</span>
+            <span class="upload-file-remove" id="uploadFileRemove">&times;</span>
+          </div>
+          <div class="upload-progress"><div class="upload-progress-bar"></div></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelUploadBtn">取消</button>
+          <button class="btn primary" id="confirmUploadBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 站点信息编辑弹窗 -->
+  <div class="modal-overlay" id="siteEditModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">编辑站点信息</div>
+        <button class="modal-close" id="closeSiteEditModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="site-edit-grid">
+          <div class="se-field"><span class="se-label">换热站编码</span><span class="se-value" id="seCode">-</span></div>
+          <div class="se-field"><span class="se-label">所属管理部</span><span class="se-value" id="seDept">-</span></div>
+          <div class="se-field"><span class="se-label">所属片区所</span><span class="se-value" id="seZone">-</span></div>
+          <div class="se-field"><span class="se-label">普查人员</span><span class="se-value" id="seWorker">-</span></div>
+          <div class="se-field se-full"><span class="se-label">用热地址</span><input class="se-input" id="seAddr" type="text"></div>
+          <div class="se-field"><span class="se-label">行政区</span><input class="se-input" id="seDistrict" type="text"></div>
+          <div class="se-field"><span class="se-label">办事处</span><input class="se-input" id="seOffice" type="text"></div>
+          <div class="se-field"><span class="se-label">联系人</span><input class="se-input" id="seContact" type="text"></div>
+          <div class="se-field"><span class="se-label">联系方式</span><input class="se-input" id="sePhone" type="text" placeholder="座机或手机号码"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelSiteEditBtn">取消</button>
+          <button class="btn primary" id="confirmSiteEditBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 普查小结弹窗 -->
+  <div class="modal-overlay" id="summaryModal" style="display:none;">
+    <div class="modal modal-unified">
+      <div class="modal-header">
+        <div class="modal-title">普查小结</div>
+        <button class="modal-close" id="closeSummaryModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="field" style="grid-column: span 2;">
+            <label><span class="req">*</span>普查小结</label>
+            <textarea class="se-input" id="sumText" rows="4" placeholder="输入内容"></textarea>
+          </div>
+        </div>
+        <div class="summary-section">
+          <div class="summary-section-title">未入网建筑物数量</div>
+          <div class="form-row">
+            <div class="field"><label><span class="req">*</span>居民户数</label><input class="se-input" id="sumResident" type="text" placeholder="请输入居民户数"></div>
+            <div class="field"><label><span class="req">*</span>非居民户数</label><input class="se-input" id="sumNonResident" type="text" placeholder="请输入非居民户数"></div>
+          </div>
+        </div>
+        <div class="summary-section">
+          <div class="summary-section-title">未入网建筑物明细</div>
+          <div id="unNetList"></div>
+          <div class="summary-add-row" id="unNetAddRow">+ 添加</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelSummaryBtn">取消</button>
+          <button class="btn primary" id="confirmSummaryBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入弹窗 -->
+  <div class="modal-overlay" id="importModal" style="display:none;">
+    <div class="modal modal-unified">
+      <div class="modal-header">
+        <div class="modal-title">导入楼栋或建筑物数据</div>
+        <button class="modal-close" id="closeImportModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-area" id="importUploadArea">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 7C3 5.89543 3.89543 5 5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 11L12 7L16 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 7V15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div class="upload-text">点击或将文件拖拽到这里上传</div>
+          <div class="upload-hint">支持格式：.xls.xlsx ，单个文件不能超过20MB</div>
+          <input type="file" id="importFile" accept=".xls,.xlsx" style="display:none;">
+        </div>
+        <div class="upload-template">
+          <a href="#" id="downloadTpl">下载模板-楼栋或建筑物数据导入模板</a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div></div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelImportBtn">取消</button>
+          <button class="btn primary" id="confirmImportBtn" disabled>保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加楼栋表单弹窗 -->
+  <div class="modal-overlay" id="addBdModal" style="display:none;">
+    <div class="modal modal-unified">
+      <div class="modal-header">
+        <div class="modal-title">添加楼栋</div>
+        <button class="modal-close" id="closeAddBdModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="field"><label><span class="req">*</span>楼号或建筑物名称</label><input class="se-input" id="bdName" type="text" placeholder="请输入楼号和建筑物名称"></div>
+          <div class="field"><label><span class="req">*</span>层数</label><input class="se-input" id="bdFloors" type="text" placeholder="请输入层数"></div>
+          <div class="field"><label>建筑物年代</label><input class="se-input" id="bdYear" type="text" placeholder="请输入建筑物年代"></div>
+          <div class="field"><label><span class="req">*</span>用热性质</label><select class="se-input" id="bdUsage"><option value="">请选择用热性质</option><option>住宅</option><option>商业</option><option>托幼机构</option><option>居委会</option><option>办公</option></select></div>
+          <div class="field"><label><span class="req">*</span>收费类别</label><select class="se-input" id="bdCharge"><option value="">请选择收费类别</option><option>高层</option><option>多层</option><option>公寓</option><option>非居</option><option>非协</option></select></div>
+          <div class="field"><label><span class="req">*</span>控制方式</label><select class="se-input" id="bdControl"><option value="">请选择控制方式</option><option>并联</option><option>串联</option><option>户内并联</option></select></div>
+          <div class="field"><label><span class="req">*</span>普查面积 (m²)</label><input class="se-input" id="bdArea" type="text" placeholder="请输入普查面积"></div>
+          <div class="field"><label><span class="req">*</span>暖气类型（需提供）</label><select class="se-input" id="bdRadiator"><option value="">请选择暖气类型（需提供）</option><option>挂暖</option><option>地暖</option><option>中央空调</option><option>其他</option></select></div>
+          <div class="field" style="grid-column: span 2;"><label><span class="req">*</span>核查依据</label><select class="se-input" id="bdBasis"><option value="">请选择核查依据</option><option>房产证</option><option>确权书</option><option>实测</option><option>预测绘</option><option>收费明细</option><option>购房合同</option><option>廉租协议</option><option>产权面积认定书</option><option>房屋测绘报告</option><option>居委全面积证明表</option><option>移交明细</option><option>宗地图</option><option>建筑图</option><option>买卖合同</option></select></div>
+          <div class="field" style="grid-column: span 2;">
+            <label><span class="req">*</span>上传普查数据</label>
+            <div class="bd-upload" id="bdUploadArea">
+              <span class="bd-upload-icon">&#x1F4CE;</span>
+              <span>上传文件</span>
+              <input type="file" id="bdFile" accept=".rar,.zip,.doc,.docx,.pdf" style="display:none;">
+            </div>
+            <div class="bd-upload-hint">支持格式：.rar .zip .doc .docx .pdf ，单个文件不能超过20MB</div>
+          </div>
+          <div class="field" style="grid-column: span 2;"><label>备注</label><textarea class="se-input" id="bdRemark" rows="3" placeholder="输入内容"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-footer-actions" style="margin-right:auto;">
+          <button class="btn" id="bdPrevBtn" disabled>上一项</button>
+        </div>
+        <div class="modal-footer-actions">
+          <button class="btn" id="cancelAddBdBtn">取消</button>
+          <button class="btn primary" id="confirmAddBdBtn">保存并下一项</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 菜单父子级展开/收起
+    var menuParent = document.querySelector('.menu-parent');
+    var subItems = document.querySelectorAll('.menu-child');
+    var menuArrow = document.getElementById('menuArrow');
+    menuParent.addEventListener('click', function() {
+      menuArrow.classList.toggle('collapsed');
+      for (var m = 0; m < subItems.length; m++) {
+        subItems[m].classList.toggle('menu-collapsed');
+      }
+    });
+
+    // 从 URL 读取站点编码，渲染顶部站点信息
+    var siteMock = {
+      '60218B001': { name: '春江花月西站', code: '60218B001', addr: '石家庄市桥西区新石中路166号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '新石街道办事处', worker: '张三、李晨晨', reason: '面积变化', contact: '王建国', phone: '0311-87654321' },
+      '60218B002': { name: '长安区东站', code: '60218B002', addr: '石家庄市长安区中山东路88号', dept: '长安管理部', zone: '长安管理部', district: '长安区', office: '建北街道办事处', worker: '王倩', reason: '一管到户', contact: '丁经理', phone: '13800138001' },
+      '60218B004': { name: '裕华区万达站', code: '60218B004', addr: '石家庄市裕华区槐安东路120号', dept: '裕华管理部', zone: '裕华管理部', district: '裕华区', office: '槐底街道办事处', worker: '李明', reason: '面积变化', contact: '李主任', phone: '13512345678' },
+      '60218B009': { name: '桥西区中心站', code: '60218B009', addr: '石家庄市桥西区裕华西路56号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '裕西街道办事处', worker: '孙悦', reason: '新开户及增容', contact: '赵主管', phone: '0311-81234567' },
+      '60218B010': { name: '裕华区北站', code: '60218B010', addr: '石家庄市裕华区中山北路88号', dept: '裕华管理部', zone: '裕华管理部', district: '裕华区', office: '裕东街道办事处', worker: '陈敏', reason: '一管到户', contact: '陈敏', phone: '13900001234' },
+      '60218B012': { name: '桥西区东站', code: '60218B012', addr: '石家庄市桥西区中山东路188号', dept: '桥西管理部', zone: '桥西管理部', district: '桥西区', office: '东里街道办事处', worker: '刘洋', reason: '面积变化', contact: '刘洋', phone: '13600005678' }
+    };
+    function getParam(name) {
+      var m = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+      return m ? decodeURIComponent(m[1]) : '';
+    }
+    function renderSite() {
+      var code = getParam('id') || '60218B001';
+      var s = siteMock[code] || siteMock['60218B001'];
+      document.getElementById('siteName').textContent = s.name;
+      document.getElementById('siteCode').textContent = s.code;
+      document.getElementById('siteAddr').textContent = s.addr;
+      document.getElementById('siteDept').textContent = s.dept;
+      document.getElementById('siteZone').textContent = s.zone;
+      document.getElementById('siteDistrict').textContent = s.district;
+      document.getElementById('siteOffice').textContent = s.office;
+      document.getElementById('siteWorker').textContent = s.worker;
+      document.getElementById('siteContact').textContent = s.contact || '-';
+      document.getElementById('sitePhone').textContent = s.phone || '-';
+      document.getElementById('reasonChip').textContent = '普查原因：' + s.reason;
+      document.title = s.name + ' - 填报 - 面积普查管理系统';
+    }
+    renderSite();
+
+    // 楼栋列表（演示数据）
+    var buildings = [
+      { name: '石家庄市桥西区实验小学', floors: '1-2F', usage: '办公', charge: '非居民', status: '完成', original: '25874.36', current: '25874.36', diff: '0.00', rate: '0.00%', control: '并联', radiator: '地暖', year: '2008年', basis: '建设图纸', file: '核查依据.pdf', remark: '' },
+      { name: '卓优教育', floors: '1F', usage: '商业', charge: '非居民', status: '完成', original: '45845645.25', current: '85845845.25', diff: '452314.25↑', rate: '25.32%', control: '并联', radiator: '地暖', year: '2008年', basis: '实测', file: '核查依据.pdf', remark: '第二层' },
+      { name: '百医堂', floors: '1F', usage: '商业', charge: '非居民', status: '完成', original: '78458.41', current: '78458.41', diff: '0.00', rate: '0.00%', control: '并联', radiator: '地暖', year: '2008年', basis: '实测', file: '核查依据.pdf', remark: '' },
+      { name: '春江花月7号楼', floors: '1-4F', usage: '住宅', charge: '多层', status: '完成', original: '2167845.15', current: '2167845.15', diff: '0.00', rate: '0.00%', control: '并联', radiator: '地暖', year: '2008年', basis: '房产证', file: '核查依据.pdf', remark: '' },
+      { name: '春江花月9号楼', floors: '11-22F', usage: '住宅', charge: '高层', status: '完成', original: '3256789.45', current: '3489000.00', diff: '232210.55↑', rate: '7.13%', control: '串联', radiator: '地暖', year: '2015年', basis: '实测', file: '核查依据.pdf', remark: '' },
+      { name: '桥西办事处办公楼', floors: '1-4F', usage: '办公', charge: '非居民', status: '完成', original: '65420.30', current: '65420.30', diff: '0.00', rate: '0.00%', control: '并联', radiator: '挂暖', year: '2005年', basis: '建设图纸', file: '核查依据.pdf', remark: '' }
+    ];
+    function statusTagHtml(s) {
+      var cls = s === '完成' ? 'bd-status-done' : 'bd-status-pending';
+      return '<span class="status-tag ' + cls + '">' + s + '</span>';
+    }
+    function changeClass(s) {
+      if (!s || s === '/') return 'bd-change-zero';
+      if (s.indexOf('↑') >= 0) return 'bd-change-up';
+      if (s.indexOf('-') === 0) return 'bd-change-down';
+      return 'bd-change-zero';
+    }
+    function renderBuildings() {
+      var tbody = document.getElementById('bdBody');
+      document.getElementById('bdCount').textContent = buildings.length;
+      if (!buildings.length) {
+        tbody.innerHTML = '<tr><td colspan="18">' +
+          '<div class="empty-state">' +
+            '<svg class="empty-icon" viewBox="0 0 24 24" fill="none"><path d="M7 3H15L19 7V21H7V3Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M14 3V8H19" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9 12H15M9 15H15M9 18H13" stroke="currentColor" stroke-width="1.2"/></svg>' +
+            '<div class="empty-text">需要添加楼栋或建筑物数据后才能进行数据上报</div>' +
+          '</div>' +
+        '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = buildings.map(function(b, i) {
+        return '<tr>' +
+          '<td><input type="checkbox" disabled></td>' +
+          '<td>' + (i + 1) + '</td>' +
+          '<td><strong>' + b.name + '</strong></td>' +
+          '<td>' + b.floors + '</td>' +
+          '<td>' + b.usage + '</td>' +
+          '<td>' + b.charge + '</td>' +
+          '<td>' + statusTagHtml(b.status) + '</td>' +
+          '<td>' + b.original + '</td>' +
+          '<td>' + b.current + '</td>' +
+          '<td class="' + changeClass(b.diff) + '">' + b.diff + '</td>' +
+          '<td class="' + changeClass(b.rate) + '">' + b.rate + '</td>' +
+          '<td>' + b.control + '</td>' +
+          '<td>' + b.radiator + '</td>' +
+          '<td>' + b.year + '</td>' +
+          '<td>' + b.basis + '</td>' +
+          '<td><a class="bd-file-link" href="#">' + b.file + '</a></td>' +
+          '<td>' + (b.remark || '-') + '</td>' +
+          '<td><div class="bd-ops">' +
+            '<a data-bd-op="edit" data-id="' + i + '">编辑</a>' +
+            '<span class="sep">|</span>' +
+            '<a class="danger" data-bd-op="del" data-id="' + i + '">删除</a>' +
+            '<span class="sep">|</span>' +
+            '<a data-bd-op="change" data-id="' + i + '">录入变更</a>' +
+          '</div></td>' +
+        '</tr>';
+      }).join('');
+    }
+    renderBuildings();
+
+    // 楼栋操作代理
+    document.getElementById('bdBody').addEventListener('click', function(e) {
+      var a = e.target.closest('a[data-bd-op]');
+      if (!a) return;
+      var op = a.getAttribute('data-bd-op');
+      var idx = parseInt(a.getAttribute('data-id'));
+      if (op === 'edit') { openAddBdModal(idx); }
+      else if (op === 'del') { if (confirm('确定要删除该楼栋吗？')) { buildings.splice(idx, 1); renderBuildings(); } }
+      else if (op === 'change') { openChangeModal(); }
+    });
+
+    // 录入变更弹窗
+    var changeModal = document.getElementById('changeModal');
+    var chList = document.getElementById('chList');
+    var chCounter = 0;
+    function chGroupHtml(idx) {
+      return '<div class="ch-group" data-idx="' + idx + '">' +
+        '<span class="ch-remove" data-remove-ch="' + idx + '">&times;</span>' +
+        '<div class="form-row">' +
+          '<div class="field"><label><span class="req">*</span>热费卡号</label><input class="se-input ch-card" type="text" placeholder="请输入热费卡号"></div>' +
+          '<div class="field"><label><span class="req">*</span>普查面积 (m²)</label><input class="se-input ch-area" type="text" placeholder="请输入普查面积"></div>' +
+          '<div class="field"><label><span class="req">*</span>核查依据</label><select class="se-input ch-basis"><option value="">请选择核查依据</option><option>房产证</option><option>确权书</option><option>实测</option><option>预测绘</option><option>收费明细</option><option>购房合同</option><option>廉租协议</option><option>产权面积认定书</option><option>房屋测绘报告</option><option>居委全面积证明表</option><option>移交明细</option><option>宗地图</option><option>建筑图</option><option>买卖合同</option></select></div>' +
+          '<div class="field"><label><span class="req">*</span>上传普查依据</label><div class="bd-upload ch-upload"><span class="bd-upload-icon">&#x1F4CE;</span><span>上传文件</span><input type="file" class="ch-file" accept=".rar,.zip,.pdf" style="display:none;"></div><div class="bd-upload-hint">支持格式：.rar .zip .pdf ，单个文件不能超过20MB</div></div>' +
+          '<div class="field" style="grid-column: span 2;"><label>备注</label><textarea class="se-input ch-remark" rows="3" placeholder="输入内容"></textarea></div>' +
+        '</div>' +
+      '</div>';
+    }
+    function bindChGroupEvents(group) {
+      var upload = group.querySelector('.ch-upload');
+      var file = group.querySelector('.ch-file');
+      if (upload && file) upload.addEventListener('click', function() { file.click(); });
+    }
+    function openChangeModal() {
+      chList.innerHTML = chGroupHtml(0);
+      chCounter = 0;
+      bindChGroupEvents(chList.querySelector('.ch-group'));
+      changeModal.style.display = 'flex';
+    }
+    function closeChangeModal() { changeModal.style.display = 'none'; }
+    function saveChange() {
+      var groups = chList.querySelectorAll('.ch-group');
+      if (!groups.length) { alert('请至少添加一条变更记录'); return; }
+      for (var i = 0; i < groups.length; i++) {
+        var g = groups[i];
+        if (!g.querySelector('.ch-card').value.trim()) { alert('第 ' + (i+1) + ' 组：热费卡号必填'); return; }
+        if (!g.querySelector('.ch-area').value.trim()) { alert('第 ' + (i+1) + ' 组：普查面积必填'); return; }
+        if (!g.querySelector('.ch-basis').value) { alert('第 ' + (i+1) + ' 组：核查依据必选'); return; }
+        if (!g.querySelector('.ch-file').files || !g.querySelector('.ch-file').files.length) { alert('第 ' + (i+1) + ' 组：需上传普查依据'); return; }
+      }
+      alert('已保存 ' + groups.length + ' 条变更记录。');
+      closeChangeModal();
+    }
+    document.getElementById('closeChangeModal').addEventListener('click', closeChangeModal);
+    document.getElementById('cancelChangeBtn').addEventListener('click', closeChangeModal);
+    document.getElementById('confirmChangeBtn').addEventListener('click', saveChange);
+    document.getElementById('chAddRow').addEventListener('click', function() {
+      var html = chGroupHtml(++chCounter);
+      chList.insertAdjacentHTML('beforeend', html);
+      var newGroup = chList.querySelector('.ch-group[data-idx="' + chCounter + '"]');
+      bindChGroupEvents(newGroup);
+    });
+    chList.addEventListener('click', function(e) {
+      var rm = e.target.closest('[data-remove-ch]');
+      if (rm) rm.closest('.ch-group').remove();
+    });
+
+    // 上传门头照/平面图弹窗
+    var uploadModal = document.getElementById('uploadModal');
+    var uploadCloudFile = document.getElementById('uploadCloudFile');
+    var uploadFileInfo = document.getElementById('uploadFileInfo');
+    function openUploadModal(title) {
+      document.getElementById('uploadTitle').textContent = title || '上传门头图';
+      uploadCloudFile.value = '';
+      uploadFileInfo.style.display = 'none';
+      document.getElementById('uploadCloudArea').style.display = 'block';
+      uploadModal.style.display = 'flex';
+    }
+    function closeUploadModal() { uploadModal.style.display = 'none'; }
+    function showUploadedFile(name) {
+      document.getElementById('uploadFileName').textContent = '📄 ' + name;
+      uploadFileInfo.style.display = 'block';
+      document.getElementById('uploadCloudArea').style.display = 'none';
+    }
+    uploadCloudFile.addEventListener('change', function() {
+      if (uploadCloudFile.files && uploadCloudFile.files.length) {
+        showUploadedFile(uploadCloudFile.files[0].name);
+      }
+    });
+    document.getElementById('uploadCloudArea').addEventListener('click', function() { uploadCloudFile.click(); });
+    document.getElementById('uploadCloudLink').addEventListener('click', function(e) { e.preventDefault(); uploadCloudFile.click(); });
+    document.getElementById('uploadFileRemove').addEventListener('click', function() {
+      uploadCloudFile.value = '';
+      uploadFileInfo.style.display = 'none';
+      document.getElementById('uploadCloudArea').style.display = 'block';
+    });
+    document.getElementById('closeUploadModal').addEventListener('click', closeUploadModal);
+    document.getElementById('cancelUploadBtn').addEventListener('click', closeUploadModal);
+    document.getElementById('confirmUploadBtn').addEventListener('click', function() {
+      if (!uploadCloudFile.files || !uploadCloudFile.files.length) { alert('请先上传文件'); return; }
+      alert('已保存：' + uploadCloudFile.files[0].name);
+      closeUploadModal();
+    });
+
+    // 导出
+    document.getElementById('exportBtn').addEventListener('click', function() { alert('导出普查明细表功能将在后续版本中开放'); });
+
+    // 导入弹窗
+    var importModal = document.getElementById('importModal');
+    var importUploadArea = document.getElementById('importUploadArea');
+    var importFile = document.getElementById('importFile');
+    var confirmImportBtn = document.getElementById('confirmImportBtn');
+    function openImportModal() { importModal.style.display = 'flex'; confirmImportBtn.disabled = true; importFile.value = ''; }
+    function closeImportModal() { importModal.style.display = 'none'; }
+    document.getElementById('importBtn').addEventListener('click', openImportModal);
+    document.getElementById('closeImportModal').addEventListener('click', closeImportModal);
+    document.getElementById('cancelImportBtn').addEventListener('click', closeImportModal);
+    importUploadArea.addEventListener('click', function() { importFile.click(); });
+    importFile.addEventListener('change', function() {
+      if (importFile.files && importFile.files.length) {
+        confirmImportBtn.disabled = false;
+        confirmImportBtn.textContent = '保存（已选：' + importFile.files[0].name + '）';
+      }
+    });
+    confirmImportBtn.addEventListener('click', function() {
+      if (!importFile.files || !importFile.files.length) return;
+      alert('文件解析功能将在后续版本中开放。\n（演示环境：未实际解析 Excel）');
+      closeImportModal();
+    });
+    document.getElementById('downloadTpl').addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('模板下载功能将在后续版本中开放。');
+    });
+
+    // 添加楼栋表单
+    var addBdModal = document.getElementById('addBdModal');
+    var bdFile = document.getElementById('bdFile');
+    var editingBdIdx = -1; // -1=新增，>=0=编辑
+    function fillBdForm(b) {
+      document.getElementById('bdName').value = b.name || '';
+      document.getElementById('bdFloors').value = b.floors || '';
+      document.getElementById('bdYear').value = b.year || '';
+      document.getElementById('bdUsage').value = b.usage || '';
+      document.getElementById('bdCharge').value = b.charge || '';
+      document.getElementById('bdControl').value = b.control || '';
+      document.getElementById('bdArea').value = b.current !== '/' ? (b.current || '') : '';
+      document.getElementById('bdRadiator').value = b.radiator || '';
+      document.getElementById('bdBasis').value = b.basis || '';
+      document.getElementById('bdRemark').value = b.remark || '';
+      bdFile.value = ''; // 文件不回填
+    }
+    function clearBdForm() {
+      ['bdName','bdFloors','bdYear','bdUsage','bdCharge','bdControl','bdArea','bdRadiator','bdBasis','bdRemark'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+      bdFile.value = '';
+    }
+    function openAddBdModal(idx) {
+      editingBdIdx = (idx !== undefined && idx >= 0) ? idx : -1;
+      if (editingBdIdx >= 0) {
+        fillBdForm(buildings[editingBdIdx]);
+      } else {
+        clearBdForm();
+      }
+      addBdModal.style.display = 'flex';
+    }
+    function closeAddBdModal() { addBdModal.style.display = 'none'; editingBdIdx = -1; }
+    function saveAndNext() {
+      var required = [
+        { id: 'bdName', label: '楼号或建筑物名称' },
+        { id: 'bdFloors', label: '层数' },
+        { id: 'bdUsage', label: '用热性质' },
+        { id: 'bdCharge', label: '收费类别' },
+        { id: 'bdControl', label: '控制方式' },
+        { id: 'bdArea', label: '普查面积' },
+        { id: 'bdRadiator', label: '暖气类型' },
+        { id: 'bdBasis', label: '核查依据' }
+      ];
+      for (var i = 0; i < required.length; i++) {
+        var v = document.getElementById(required[i].id).value;
+        if (!v) { alert('请填写：' + required[i].label); return; }
+      }
+      if (!bdFile.files || !bdFile.files.length) { alert('请上传普查数据文件'); return; }
+      var b = {
+        name: document.getElementById('bdName').value.trim(),
+        floors: document.getElementById('bdFloors').value.trim(),
+        year: document.getElementById('bdYear').value.trim() || '-',
+        usage: document.getElementById('bdUsage').value,
+        charge: document.getElementById('bdCharge').value,
+        control: document.getElementById('bdControl').value,
+        current: document.getElementById('bdArea').value.trim(),
+        original: '0.00',
+        diff: '0.00',
+        rate: '0.00%',
+        radiator: document.getElementById('bdRadiator').value,
+        basis: document.getElementById('bdBasis').value,
+        status: '待普查',
+        file: bdFile.files[0] ? bdFile.files[0].name : '核查依据.pdf',
+        remark: document.getElementById('bdRemark').value.trim()
+      };
+      if (editingBdIdx >= 0) {
+        // 编辑：保留原普查面积等对比数据
+        b.original = buildings[editingBdIdx].original;
+        b.diff = buildings[editingBdIdx].diff;
+        b.rate = buildings[editingBdIdx].rate;
+        buildings[editingBdIdx] = b;
+      } else {
+        buildings.push(b);
+      }
+      editingBdIdx = -1;
+      renderBuildings();
+      clearBdForm();
+      alert('已保存：' + b.name + (editingBdIdx >= 0 ? '' : '，可继续添加下一项。'));
+    }
+    document.getElementById('addBdBtn').addEventListener('click', function() { openAddBdModal(); });
+    document.getElementById('closeAddBdModal').addEventListener('click', closeAddBdModal);
+    document.getElementById('cancelAddBdBtn').addEventListener('click', closeAddBdModal);
+    document.getElementById('confirmAddBdBtn').addEventListener('click', saveAndNext);
+    document.getElementById('bdUploadArea').addEventListener('click', function() { bdFile.click(); });
+
+    // 附件上传
+    document.getElementById('uploadFrontBtn').addEventListener('click', function() { openUploadModal('上传门头图'); });
+    document.getElementById('uploadPlanBtn').addEventListener('click', function() { openUploadModal('上传平面图'); });
+
+    // 普查小结弹窗
+    var summaryModal = document.getElementById('summaryModal');
+    var unNetList = document.getElementById('unNetList');
+    var unNetCounter = 0;
+    function unNetItemHtml(idx) {
+      return '<div class="unnet-detail-item" data-idx="' + idx + '">' +
+        '<span class="remove-btn" data-remove-unnet="' + idx + '">&times;</span>' +
+        '<div class="unnet-detail-row">' +
+          '<div class="field"><label><span class="req">*</span>楼号</label><input class="se-input" type="text" placeholder="请输入楼号"></div>' +
+          '<div class="field"><label><span class="req">*</span>单元号</label><input class="se-input" type="text" placeholder="请输入单元号"></div>' +
+          '<div class="field"><label><span class="req">*</span>户室号</label><input class="se-input" type="text" placeholder="请输入户室号"></div>' +
+        '</div>' +
+        '<div class="unnet-detail-row">' +
+          '<div class="field"><label><span class="req">*</span>采暖方式</label><select class="se-input"><option value="">请选择采暖方式</option><option>集中供暖</option><option>分户独立</option><option>自供暖</option><option>无</option></select></div>' +
+          '<div class="field"><label><span class="req">*</span>供热性质</label><select class="se-input"><option value="">请选择供热性质</option><option>集中供热</option><option>区域供热</option><option>分散供热</option></select></div>' +
+          '<div class="field"><label>备注</label><input class="se-input" type="text" placeholder="输入内容"></div>' +
+        '</div>' +
+      '</div>';
+    }
+    function openSummaryModal() {
+      document.getElementById('sumText').value = '';
+      document.getElementById('sumResident').value = '';
+      document.getElementById('sumNonResident').value = '';
+      unNetList.innerHTML = '';
+      unNetCounter = 0;
+      summaryModal.style.display = 'flex';
+    }
+    function closeSummaryModal() { summaryModal.style.display = 'none'; }
+    function saveSummary() {
+      if (!document.getElementById('sumText').value.trim()) { alert('请填写普查小结'); return; }
+      if (!document.getElementById('sumResident').value.trim()) { alert('请填写居民户数'); return; }
+      if (!document.getElementById('sumNonResident').value.trim()) { alert('请填写非居民户数'); return; }
+      // 同步到顶部站点信息卡
+      var sumRes = document.getElementById('sumResident').value.trim();
+      var sumNon = document.getElementById('sumNonResident').value.trim();
+      var inlineHtml = '<span class="si-inline-field">居民 ' + sumRes + ' 户</span>' +
+        '<span class="si-inline-sep">|</span>' +
+        '<span class="si-inline-field">非居民 ' + sumNon + ' 户</span>';
+      var unNetField = document.getElementById('siteUnNetValue');
+      if (unNetField) unNetField.innerHTML = inlineHtml;
+      closeSummaryModal();
+      alert('普查小结已保存。');
+    }
+    document.getElementById('summaryBtn').addEventListener('click', openSummaryModal);
+    document.getElementById('closeSummaryModal').addEventListener('click', closeSummaryModal);
+    document.getElementById('cancelSummaryBtn').addEventListener('click', closeSummaryModal);
+    document.getElementById('confirmSummaryBtn').addEventListener('click', saveSummary);
+    document.getElementById('unNetAddRow').addEventListener('click', function() {
+      unNetList.insertAdjacentHTML('beforeend', unNetItemHtml(++unNetCounter));
+    });
+    unNetList.addEventListener('click', function(e) {
+      var rm = e.target.closest('[data-remove-unnet]');
+      if (rm) rm.closest('.unnet-detail-item').remove();
+    });
+    // 站点信息编辑弹窗
+    var siteEditModal = document.getElementById('siteEditModal');
+    var currentSiteData = null;
+    function openSiteEditModal() {
+      currentSiteData = siteMock[getParam('id') || '60218B001'] || siteMock['60218B001'];
+      document.getElementById('seCode').textContent = currentSiteData.code;
+      document.getElementById('seAddr').value = currentSiteData.addr;
+      document.getElementById('seDept').textContent = currentSiteData.dept;
+      document.getElementById('seZone').textContent = currentSiteData.zone;
+      document.getElementById('seDistrict').value = currentSiteData.district;
+      document.getElementById('seOffice').value = currentSiteData.office;
+      document.getElementById('seWorker').textContent = currentSiteData.worker;
+      document.getElementById('seContact').value = currentSiteData.contact || '';
+      document.getElementById('sePhone').value = currentSiteData.phone || '';
+      siteEditModal.style.display = 'flex';
+    }
+    function closeSiteEditModal() { siteEditModal.style.display = 'none'; }
+    function saveSiteEdit() {
+      if (!currentSiteData) return;
+      currentSiteData.addr = document.getElementById('seAddr').value.trim() || currentSiteData.addr;
+      currentSiteData.district = document.getElementById('seDistrict').value.trim() || currentSiteData.district;
+      currentSiteData.office = document.getElementById('seOffice').value.trim() || currentSiteData.office;
+      currentSiteData.contact = document.getElementById('seContact').value.trim() || currentSiteData.contact;
+      currentSiteData.phone = document.getElementById('sePhone').value.trim() || currentSiteData.phone;
+      document.getElementById('siteAddr').textContent = currentSiteData.addr;
+      document.getElementById('siteDistrict').textContent = currentSiteData.district;
+      document.getElementById('siteOffice').textContent = currentSiteData.office;
+      document.getElementById('siteContact').textContent = currentSiteData.contact || '-';
+      document.getElementById('sitePhone').textContent = currentSiteData.phone || '-';
+      siteEditModal.style.display = 'none';
+    }
+    document.getElementById('siteEditBtn').addEventListener('click', openSiteEditModal);
+    document.getElementById('closeSiteEditModal').addEventListener('click', closeSiteEditModal);
+    document.getElementById('cancelSiteEditBtn').addEventListener('click', closeSiteEditModal);
+    document.getElementById('confirmSiteEditBtn').addEventListener('click', saveSiteEdit);
+
+    // 底部操作
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+      if (confirm('确定要取消吗？已填写的数据将不会保存。')) {
+        history.back();
+      }
+    });
+    document.getElementById('saveDraftBtn').addEventListener('click', function() {
+      alert('已暂存。');
+    });
+    document.getElementById('submitBtn').addEventListener('click', function() {
+      if (!buildings.length) {
+        alert('尚未添加任何楼栋数据，请先添加或导入。');
+        return;
+      }
+      if (confirm('确定要上报至站长审核吗？上报后审核前可撤回。')) {
+        alert('已上报至站长审核。');
+        history.back();
+      }
+    });
+  </script>
+</body>
+</html>
