@@ -6,48 +6,55 @@
   <title>计划外普查站点明细 - 面积普查管理系统</title>
   <link rel="stylesheet" href="pc-template-base.css">
   <style>
-    .site-detail-layout{grid-template-columns:var(--sidebar-width) 280px minmax(0,1fr)}
-    .org-rail{min-width:0;padding:20px 12px;background:#f5f7fb;border-right:1px solid var(--border)}
-    .org-card{position:sticky;top:calc(var(--nav-height) + 20px);min-height:calc(100vh - var(--nav-height) - 40px);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow);overflow:hidden}
-    .org-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #edf1f7}
-    .org-title{font-size:16px;font-weight:700;color:var(--text)}
+    .site-detail-layout{grid-template-columns:var(--sidebar-width) 248px minmax(0,1fr)}
+    .org-rail{min-width:0;padding:12px 10px;background:#f5f7fb;border-right:1px solid var(--border)}
+    .org-card{position:sticky;top:calc(var(--nav-height) + 12px);min-height:calc(100vh - var(--nav-height) - 24px);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow);overflow:hidden}
+    .org-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #edf1f7}
+    .org-title{font-size:15px;font-weight:700;color:var(--text)}
     .org-reset{border:0;background:transparent;color:var(--primary);padding:0;cursor:pointer;font-size:13px}
-    .org-content{padding:16px 14px}
-    .org-search-wrap{position:relative;margin-bottom:14px}
-    .org-search{width:100%;height:36px;padding:0 34px 0 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);font:inherit;outline:none}
+    .org-content{padding:12px 10px}
+    .org-search-wrap{position:relative;margin-bottom:10px}
+    .org-search{width:100%;height:32px;padding:0 30px 0 10px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);font:inherit;font-size:13px;outline:none}
     .org-search:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(78,112,235,.12)}
     .org-search::placeholder{color:var(--muted-2)}
-    .org-search-icon{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
-    .org-tree{display:flex;flex-direction:column;gap:4px}
+    .org-search-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+    .org-tree{display:flex;flex-direction:column;gap:2px}
     .org-dept-group{min-width:0}
     .org-row{display:flex;align-items:center;min-width:0;border-radius:6px;color:#53627b}
     .org-row:hover{background:#f6f8ff}
     .org-row.selected{background:var(--primary-soft);color:var(--primary)}
-    .org-expand{flex:0 0 28px;width:28px;height:36px;border:0;background:transparent;color:#8a96aa;cursor:pointer;padding:0;transition:transform .15s}
+    .org-expand{flex:0 0 25px;width:25px;height:31px;border:0;background:transparent;color:#8a96aa;cursor:pointer;padding:0;transition:transform .15s}
     .org-expand.collapsed{transform:rotate(-90deg)}
-    .org-node{display:flex;align-items:center;gap:8px;min-width:0;flex:1;height:36px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;padding:0 8px 0 0;font-size:14px}
+    .org-node{display:flex;align-items:center;gap:7px;min-width:0;flex:1;height:31px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;padding:0 6px 0 0;font-size:13px}
     .org-node.dept{font-weight:600}
-    .org-node.zone{height:34px;padding-left:42px}
+    .org-node.zone{height:29px;padding-left:35px}
     .org-node-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .org-node-icon{flex:0 0 auto;color:#8a96aa;font-size:12px}
-    .org-children{display:flex;flex-direction:column;gap:2px}
-    .org-empty{padding:32px 8px;text-align:center;color:var(--muted);font-size:13px}
-    .page-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
-    .page-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px}.page-subtitle{color:var(--muted);font-size:13px}
+    .org-children{display:flex;flex-direction:column;gap:1px}
+    .org-empty{padding:24px 8px;text-align:center;color:var(--muted);font-size:13px}
+    .site-detail-layout>.main{padding:14px 18px}
+    .site-detail-layout .breadcrumb{margin-bottom:10px;font-size:13px}
+    .page-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .page-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:2px}.page-subtitle{color:var(--muted);font-size:12px}
     .role-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:600}
-    .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 20px;align-items:end}
-    .filter-grid .field{display:flex;align-items:center;gap:8px;min-width:0;position:relative}
-    .filter-grid .field>label{margin-bottom:0;flex-shrink:0;color:#7e8aa0;font-size:13px;white-space:nowrap}
+    .site-detail-layout .card{margin-bottom:12px}
+    .site-detail-layout .card-header{padding:11px 16px}
+    .site-detail-layout .card-body{padding:14px 16px}
+    .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 14px;align-items:end}
+    .filter-grid .field{display:flex;align-items:center;gap:7px;min-width:0;position:relative}
+    .filter-grid .field>label{margin-bottom:0;flex-shrink:0;color:#7e8aa0;font-size:12px;white-space:nowrap}
     .filter-grid .field>.control,.filter-grid .field>.range{flex:1;min-width:0;width:auto}
-    .range{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);align-items:center;gap:8px}.range-sep{text-align:center;color:var(--muted)}
-    .filter-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:36px;grid-column:4}
+    .filter-grid .control{height:32px;padding-left:10px;padding-right:10px;font-size:13px}
+    .range{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr);align-items:center;gap:5px}.range-sep{text-align:center;color:var(--muted)}
+    .filter-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;height:32px;grid-column:4}
+    .filter-actions .btn{height:32px;padding:0 14px;font-size:13px}
     .field-error{display:none;position:absolute;left:0;top:calc(100% + 4px);color:var(--danger);font-size:12px;white-space:nowrap}.field-error.visible{display:block}
-    .table-scroll{overflow-x:auto}.detail-table{min-width:3390px}.detail-table th,.detail-table td{white-space:nowrap}
+    .table-scroll{overflow-x:auto;padding-bottom:5px}.detail-table{min-width:3150px}.detail-table th,.detail-table td{padding:10px 12px;white-space:nowrap;font-size:13px}
     .detail-table td.address-cell{max-width:230px;overflow:hidden;text-overflow:ellipsis}
     .detail-table td.num{text-align:right;font-variant-numeric:tabular-nums}
     .sticky-operation{position:sticky;right:0;background:#fff;box-shadow:-6px 0 10px rgba(31,45,61,.05);z-index:2}
     thead .sticky-operation{background:#fafbfc;z-index:3}
-    .status-tag{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:2px 8px;border-radius:999px;font-size:12px;line-height:20px}
+    .status-tag{display:inline-flex;align-items:center;justify-content:center;min-width:54px;padding:1px 7px;border-radius:999px;font-size:12px;line-height:19px}
     .status-muted{background:#f3f4f6;color:#6b7280}.status-progress{background:#e6f4ff;color:#1677ff}.status-success{background:#f0fff4;color:#389e0d}
     .status-review{background:#fff7e6;color:#d46b08}.status-returned{background:#fff2f0;color:#cf1322}
     .change-up{color:#cf1322}.change-down{color:#1677ff}.change-zero{color:var(--text-2)}.empty-value{color:var(--muted)}
@@ -58,7 +65,9 @@
     .modal-site{font-weight:700;color:var(--text)}.textarea-wrap{position:relative}.textarea-wrap textarea{min-height:110px;resize:vertical;padding-bottom:28px}.char-count{position:absolute;right:10px;bottom:8px;color:var(--muted);font-size:12px}
     .modal-error{display:none;color:var(--danger);font-size:12px;margin-top:6px}.modal-error.visible{display:block}.control.invalid{border-color:var(--danger)}
     .toast{position:fixed;left:50%;top:76px;transform:translate(-50%,-12px);padding:10px 16px;border-radius:6px;background:rgba(31,45,61,.94);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:.2s;z-index:1200}.toast.show{opacity:1;transform:translate(-50%,0)}
-    @media(max-width:1280px){.site-detail-layout{grid-template-columns:200px 230px minmax(0,1fr)}.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-grid .field[style*="grid-column"]{grid-column:span 2!important}.filter-actions{grid-column:2}}
+    .site-detail-layout .pagination{padding:10px 16px 12px}
+    .site-detail-layout .page-box{gap:7px}.site-detail-layout .page-btn{width:34px;height:34px}
+    @media(max-width:1280px){.site-detail-layout{grid-template-columns:200px 218px minmax(0,1fr)}.site-detail-layout>.main{padding:12px 14px}.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}.filter-grid .field[style*="grid-column"]{grid-column:span 2!important}.filter-actions{grid-column:2}}
     @media(max-width:900px){.site-detail-layout{grid-template-columns:200px minmax(0,1fr)}.org-rail{grid-column:2;padding:16px 16px 0;border-right:0}.org-card{position:static;min-height:0}.main{grid-column:2}.filter-actions{grid-column:2}}
   </style>
 </head>
@@ -77,6 +86,9 @@
           <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html"><span class="menu-icon" style="visibility:hidden">▣</span>我的计划外普查任务</a>
           <a class="menu-item menu-child active" href="plan-outside-survey-site-details.html"><span class="menu-icon" style="visibility:hidden">▣</span>计划外普查站点明细</a>
           <a class="menu-item area-survey-entry" href="area-survey-placeholder.html"><span class="menu-icon">▣</span>面积普查</a>
+          <a class="menu-item" href="plan-outside-survey-user-area-change.html" style="padding:14px 20px;white-space:nowrap;">
+            <span class="menu-icon">%A3;</span> 自营站面积变化统计
+          </a>
         </div>
       </aside>
       <aside class="org-rail" aria-label="组织机构筛选">
