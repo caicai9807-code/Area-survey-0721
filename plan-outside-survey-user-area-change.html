@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自营站面积变化统计 - 面积普查管理系统</title>
+  <link rel="stylesheet" href="pc-template-base.css">
+  <style>
+    .table-scroll { overflow-x: auto; padding-bottom: 5px; }
+    .change-table { min-width: 3400px; border-collapse: collapse; }
+    .change-table th,
+    .change-table td { padding: 10px 12px; white-space: nowrap; font-size: 13px; text-align: center; border-bottom: 1px solid var(--border-2); }
+    .change-table th { background: #fafbfc; position: sticky; top: 0; z-index: 2; font-weight: 600; color: var(--text); vertical-align: middle; }
+    .change-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .change-table tbody tr:hover { background: #fafbfc; }
+    .change-table .empty-row td { text-align: center !important; padding: 54px 16px !important; color: var(--muted); }
+
+    /* 表头分组背景色 */
+    .change-table th.group-orig { background: #fffbe6 !important; color: #ad6800; }
+    .change-table th.group-cur { background: #f6ffed !important; color: #389e0d; }
+    .change-table td.group-orig-cell { background: #fffdf6; }
+    .change-table td.group-cur-cell { background: #fcfff8; }
+
+    /* 标签徽章 */
+    .tag-pill { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .tag-unchanged { background: var(--success-soft); color: var(--success); }
+    .tag-changed { background: var(--warning-soft); color: var(--warning); }
+
+    /* ── 顶部 5 个统计卡 ── */
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 16px; }
+    .stat-card { background: var(--card); border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow); }
+    .stat-card .stat-label { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+    .stat-card .stat-value { color: var(--text); font-size: 26px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .stat-card .stat-unit { color: var(--muted); font-size: 12px; margin-left: 4px; font-weight: 400; }
+    .stat-card .stat-foot { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .stat-card.accent-blue .stat-value { color: var(--primary); }
+    .stat-card.accent-red .stat-value { color: var(--danger); }
+    .stat-card.accent-green .stat-value { color: var(--success); }
+
+    /* ── 标签过滤 ── */
+    .tab-bar { display: flex; gap: 8px; align-items: center; padding: 4px 0 12px; }
+    .tab-bar .tab { padding: 4px 14px; border-radius: 16px; font-size: 13px; color: var(--text-2); cursor: pointer; background: transparent; border: 1px solid transparent; transition: all .15s; }
+    .tab-bar .tab:hover { color: var(--primary); }
+    .tab-bar .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* ── 页面头部 ── */
+    .page-header-row {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      margin: 0 0 14px;
+    }
+    .page-title { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
+    .page-subtitle { margin: 0; color: var(--muted); font-size: 13px; }
+
+    /* 卡片标题区 */
+    .card-title-meta { display: inline-flex; align-items: center; gap: 10px; margin-left: 8px; color: var(--muted); font-size: 13px; font-weight: 400; }
+    .loaded-badge { padding: 2px 10px; border-radius: 12px; background: var(--success-soft); color: var(--success); font-size: 12px; font-weight: 500; }
+
+    /* 右侧操作区 */
+    .header-actions { display: flex; gap: 8px; }
+
+    /* 摘要小卡（卡片标题下方提示） */
+    .table-meta { display: flex; align-items: center; gap: 6px; padding: 12px 16px 4px; color: var(--muted); font-size: 13px; }
+
+    /* 卡片容器 */
+    .card { background: var(--card); border-radius: var(--radius-md); box-shadow: var(--shadow); margin-bottom: 16px; }
+    .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border-2); display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .card-body { padding: 0; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">&#x25A6;</div>
+        <span>面积普查管理系统</span>
+        <span class="chip" style="background:rgba(255,255,255,.15);font-weight:600;">原型环境</span>
+      </div>
+      <div class="top-actions">
+        <div class="top-dropdown">
+          <span class="top-label">演示身份:</span> 计划经营部 <span style="font-size:10px;margin-left:2px;">&#x25BC;</span>
+        </div>
+        <div class="avatar">陈</div>
+        <span>陈敏</span>
+      </div>
+    </header>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="menu-section">
+          <a class="menu-item menu-parent" href="#" onclick="return false">
+            <span class="menu-icon">&#x25A3;</span> 计划外面积普查
+            <span class="menu-arrow" id="menuArrow">&#x25B2;</span>
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-list.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务管理
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-items.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查任务
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-task-worker.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 我的计划外普查任务
+          </a>
+          <a class="menu-item menu-child" href="plan-outside-survey-site-details.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 计划外普查站点明细
+          </a>
+          <a class="menu-item menu-child" href="area-survey-placeholder.html">
+            <span class="menu-icon" style="visibility:hidden">&#x25A3;</span> 面积普查
+          </a>
+          <a class="menu-item active" href="plan-outside-survey-user-area-change.html" style="padding:14px 20px;white-space:nowrap;">
+            <span class="menu-icon">&#x25A3;</span> 自营站面积变化统计
+          </a>
+        </div>
+      </aside>
+      <main class="main">
+        <nav class="breadcrumb">
+          <a href="#">面积普查</a><span>/</span><a href="#">统计分析</a><span>/</span><span>自营站面积变化统计</span>
+        </nav>
+
+        <div class="page-header-row">
+          <div>
+            <div class="page-title">自营站面积变化统计</div>
+            <p class="page-subtitle">按区域、片区、换热站维度统计原核查表面积、现核查表面积及面积变化情况。</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn" id="exportBtn">导出报表</button>
+          </div>
+        </div>
+
+        <!-- 5 个统计卡 -->
+        <div class="stat-cards">
+          <div class="stat-card accent-blue">
+            <div class="stat-label">站点数量</div>
+            <div class="stat-value" id="statCount">12<span class="stat-unit">个</span></div>
+            <div class="stat-foot">当前筛选</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">原核查表面积</div>
+            <div class="stat-value" id="statOrig">303,580.25<span class="stat-unit">平方米</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">现核查表面积</div>
+            <div class="stat-value" id="statCur">305,080.25<span class="stat-unit">平方米</span></div>
+          </div>
+          <div class="stat-card accent-green">
+            <div class="stat-label">现较原面积变化</div>
+            <div class="stat-value" id="statChange">+1,500.00<span class="stat-unit">平方米</span></div>
+          </div>
+        </div>
+
+        <section class="card">
+          <div class="card-header">
+            <div class="card-title">
+              统计明细
+              <span class="card-title-meta">
+                <span>单位：平方米；横向滚动查看完整字段</span>
+              </span>
+            </div>
+            <span class="loaded-badge" id="loadedBadge">已加载 12 条</span>
+          </div>
+          <div class="card-body">
+            <div class="tab-bar" id="tabBar" style="padding-left:18px;padding-right:18px;">
+              <span class="tab active" data-area="all">全部</span>
+              <span class="tab" data-area="裕华区">裕华区</span>
+              <span class="tab" data-area="长安区">长安区</span>
+              <span class="tab" data-area="桥西区">桥西区</span>
+            </div>
+            <div class="table-scroll">
+              <table class="change-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">序号</th>
+                    <th rowspan="2">区域</th>
+                    <th rowspan="2">片区</th>
+                    <th rowspan="2">换热站编码(6位)</th>
+                    <th rowspan="2">类别</th>
+                    <th rowspan="2">核查时间</th>
+                    <th rowspan="2">普查人员</th>
+                    <th rowspan="2">站名称</th>
+                    <th colspan="5" class="group-orig">原面积</th>
+                    <th colspan="5" class="group-cur">现面积</th>
+                    <th rowspan="2">原居民</th>
+                    <th rowspan="2">现居民</th>
+                    <th rowspan="2">原非居民</th>
+                    <th rowspan="2">现非居民</th>
+                    <th rowspan="2">原核查表面积</th>
+                    <th rowspan="2">现核查表面积</th>
+                    <th rowspan="2">现较原面积变化</th>
+                    <th rowspan="2">面积变化增加比例</th>
+                    <th rowspan="2">是否存在未入网建筑面积或未入网建筑物</th>
+                  </tr>
+                  <tr>
+                    <th class="group-orig">居民多层</th>
+                    <th class="group-orig">居民公寓</th>
+                    <th class="group-orig">居民高层</th>
+                    <th class="group-orig">非居民</th>
+                    <th class="group-orig">非协</th>
+                    <th class="group-cur">居民多层</th>
+                    <th class="group-cur">居民公寓</th>
+                    <th class="group-cur">居民高层</th>
+                    <th class="group-cur">非居民</th>
+                    <th class="group-cur">非协</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    var mockData = [
+      // 桥西区 2 条（与截图一致）
+      { area:'桥西区', subArea:'维明', code:'31018A', category:'无变化', checkTime:'2025-04-10', checkers:'刘明、赵鹏', siteName:'西里小区站',
+        orig:[18500.5, 0, 22000.25, 3100.75, 0], cur:[18500.5, 0, 22000.25, 3100.75, 0] },
+      { area:'桥西区', subArea:'苑东', code:'31025B', category:'有变化', checkTime:'2025-04-12', checkers:'陈晨、马宁', siteName:'苑东热力站',
+        orig:[25800, 0, 0, 4200, 0], cur:[26800, 0, 0, 4700, 0] },
+      // 裕华区 5 条
+      { area:'裕华区', subArea:'裕东', code:'41012A', category:'有变化', checkTime:'2025-04-08', checkers:'赵建国、马涛', siteName:'槐北路站',
+        orig:[15300, 1200, 19800, 2400, 0], cur:[15300, 1200, 20800, 2400, 0] },
+      { area:'裕华区', subArea:'裕强', code:'41018B', category:'无变化', checkTime:'2025-04-11', checkers:'孙静、刘洋', siteName:'体育大街站',
+        orig:[22000, 0, 17500, 3200, 0], cur:[22000, 0, 17500, 3200, 0] },
+      { area:'裕华区', subArea:'裕东', code:'41022C', category:'有变化', checkTime:'2025-04-14', checkers:'张磊、陈芳', siteName:'裕华东路站',
+        orig:[8500, 800, 26000, 1200, 0], cur:[8500, 800, 27500, 1200, 0] },
+      { area:'裕华区', subArea:'裕西', code:'41035D', category:'无变化', checkTime:'2025-04-17', checkers:'周敏、郑伟', siteName:'裕华西路站',
+        orig:[11000, 0, 19000, 2100, 0], cur:[11000, 0, 19000, 2100, 0] },
+      { area:'裕华区', subArea:'裕强', code:'41041E', category:'有变化', checkTime:'2025-04-20', checkers:'林涛、徐倩', siteName:'槐底站',
+        orig:[9500, 600, 16200, 1400, 0], cur:[9500, 600, 17200, 1400, 0] },
+      // 长安区 5 条
+      { area:'长安区', subArea:'建北', code:'51007A', category:'有变化', checkTime:'2025-04-09', checkers:'马丽、刘峰', siteName:'建设北大街站',
+        orig:[14000, 1600, 21500, 2800, 0], cur:[14000, 1600, 22500, 2800, 0] },
+      { area:'长安区', subArea:'河东', code:'51014B', category:'无变化', checkTime:'2025-04-13', checkers:'黄磊、冯伟', siteName:'和平东路站',
+        orig:[17500, 0, 16800, 2300, 0], cur:[17500, 0, 16800, 2300, 0] },
+      { area:'长安区', subArea:'建北', code:'51021C', category:'有变化', checkTime:'2025-04-16', checkers:'吴强、徐娟', siteName:'中山路站',
+        orig:[10500, 0, 24000, 1900, 0], cur:[10500, 0, 25500, 1900, 0] },
+      { area:'长安区', subArea:'河东', code:'51029D', category:'无变化', checkTime:'2025-04-19', checkers:'韩冰、王超', siteName:'谈固南大街站',
+        orig:[13200, 900, 18200, 1600, 0], cur:[13200, 900, 18200, 1600, 0] },
+      { area:'长安区', subArea:'建北', code:'51033E', category:'有变化', checkTime:'2025-04-22', checkers:'郑昊、王莹', siteName:'跃进路站',
+        orig:[8000, 0, 15000, 1100, 0], cur:[8000, 0, 16200, 1100, 0] }
+    ];
+
+    var currentArea = 'all';
+    var data = mockData.slice();
+
+    function esc(val) {
+      return String(val).replace(/[&<>'"]/g, function(c) {
+        return { '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c];
+      });
+    }
+
+    function fmtNum(n) {
+      var v = Number(n);
+      // 整数不带小数；带小数的保留 2 位
+      if (Math.abs(v - Math.round(v)) < 0.0001) return v.toLocaleString('zh-CN');
+      return v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function filtered() {
+      if (currentArea === 'all') return mockData.slice();
+      return mockData.filter(function(r) { return r.area === currentArea; });
+    }
+
+    function render() {
+      var data = filtered();
+      var rows = data;
+
+      // 顶部统计卡：基于筛选后的全量
+      var totalOrig = 0, totalCur = 0;
+      data.forEach(function(r) {
+        totalOrig += r.orig.reduce(function(a, b) { return a + b; }, 0);
+        totalCur += r.cur.reduce(function(a, b) { return a + b; }, 0);
+      });
+      var totalChange = totalCur - totalOrig;
+      document.getElementById('statCount').innerHTML = data.length + '<span class="stat-unit">个</span>';
+      document.getElementById('statOrig').innerHTML = fmtNum(totalOrig) + '<span class="stat-unit">平方米</span>';
+      document.getElementById('statCur').innerHTML = fmtNum(totalCur) + '<span class="stat-unit">平方米</span>';
+      var changeEl = document.getElementById('statChange');
+      changeEl.innerHTML = (totalChange >= 0 ? '+' : '') + fmtNum(totalChange) + '<span class="stat-unit">平方米</span>';
+
+      // 总数
+      document.getElementById('loadedBadge').textContent = '共 ' + data.length + ' 条';
+
+      var tbody = document.getElementById('tableBody');
+      if (rows.length) {
+        tbody.innerHTML = rows.map(function(r, i) {
+          var idx = i + 1;
+          var tagCls = r.category === '无变化' ? 'tag-unchanged' : 'tag-changed';
+
+          var origResident = r.orig[0] + r.orig[1] + r.orig[2];
+          var origNonRes = r.orig[3] + r.orig[4];
+          var curResident = r.cur[0] + r.cur[1] + r.cur[2];
+          var curNonRes = r.cur[3] + r.cur[4];
+          var origTotal = origResident + origNonRes;
+          var curTotal = curResident + curNonRes;
+          var change = curTotal - origTotal;
+          var ratio = origTotal > 0 ? (change / origTotal * 100) : 0;
+          var ratioStr = (ratio > 0 ? '+' : '') + ratio.toFixed(2) + '%';
+          var changeClass = change > 0 ? 'change-up' : (change < 0 ? 'change-down' : 'change-zero');
+          var changeSign = change > 0 ? '+' : '';
+
+          var origCells = r.orig.map(function(v) {
+            return '<td class="num group-orig-cell">' + fmtNum(v) + '</td>';
+          }).join('');
+          var curCells = r.cur.map(function(v) {
+            return '<td class="num group-cur-cell">' + fmtNum(v) + '</td>';
+          }).join('');
+
+          var unnetBadge = r.hasUnnet
+            ? '<span class="tag-pill tag-changed">是</span>'
+            : '<span class="tag-pill tag-unchanged">否</span>';
+
+          return '<tr>' +
+            '<td>' + idx + '</td>' +
+            '<td>' + esc(r.area) + '</td>' +
+            '<td>' + esc(r.subArea) + '</td>' +
+            '<td>' + esc(r.code) + '</td>' +
+            '<td><span class="tag-pill ' + tagCls + '">' + esc(r.category) + '</span></td>' +
+            '<td>' + esc(r.checkTime) + '</td>' +
+            '<td>' + esc(r.checkers) + '</td>' +
+            '<td>' + esc(r.siteName) + '</td>' +
+            origCells + curCells +
+            '<td class="num"><strong>' + fmtNum(origResident) + '</strong></td>' +
+            '<td class="num"><strong>' + fmtNum(curResident) + '</strong></td>' +
+            '<td class="num"><strong>' + fmtNum(origNonRes) + '</strong></td>' +
+            '<td class="num"><strong>' + fmtNum(curNonRes) + '</strong></td>' +
+            '<td class="num">' + fmtNum(origTotal) + '</td>' +
+            '<td class="num">' + fmtNum(curTotal) + '</td>' +
+            '<td class="num ' + changeClass + '"><strong>' + changeSign + fmtNum(change) + '</strong></td>' +
+            '<td class="num ' + changeClass + '">' + ratioStr + '</td>' +
+            '<td>' + unnetBadge + '</td>' +
+            '</tr>';
+        }).join('');
+      } else {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="27">暂无数据</td></tr>';
+      }
+    }
+
+    document.getElementById('tabBar').addEventListener('click', function(e) {
+      var t = e.target.closest('.tab');
+      if (!t) return;
+      document.querySelectorAll('#tabBar .tab').forEach(function(el) { el.classList.remove('active'); });
+      t.classList.add('active');
+      currentArea = t.getAttribute('data-area');
+      render();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      alert('演示：导出当前筛选的自营站面积变化报表');
+    });
+
+    // 一级菜单展开/收起
+    document.querySelector('.menu-parent').addEventListener('click', function() {
+      document.getElementById('menuArrow').classList.toggle('collapsed');
+      document.querySelectorAll('.menu-child').forEach(function(item) {
+        item.classList.toggle('menu-collapsed');
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
